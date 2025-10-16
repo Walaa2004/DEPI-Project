@@ -49,13 +49,44 @@
 	<link rel="stylesheet" type="text/css" href="assets/vendor/bootstrap-select/css/bootstrap-select.min.css">
 	<link rel="stylesheet" type="text/css" href="assets/vendor/magnific-popup/magnific-popup.min.css">
 
-	<!-- Custom Stylesheet -->
 	<link rel="stylesheet" type="text/css" href="assets/css/style.css">
 
+	<!-- Replace feather icons with CSS arrows -->
 	<style>
-		/* Make feather arrow-right icons black */
-		.feather.icon-arrow-right {
-			color: #000000 !important;
+		/* CSS Arrow Icons */
+		.feather.icon-arrow-right:before,
+		.feather.icon-arrow-right-circle:before {
+			content: "→";
+			font-family: Arial, sans-serif;
+			font-size: 16px;
+			color: #000;
+		}
+
+		.feather.icon-arrow-up-right:before {
+			content: "↗";
+			font-family: Arial, sans-serif;
+			font-size: 16px;
+			color: #000;
+		}
+
+		.feather.icon-calendar:before {
+			content: "📅";
+			font-family: Arial, sans-serif;
+			font-size: 16px;
+		}
+
+		.feather.icon-phone-call:before {
+			content: "📞";
+			font-family: Arial, sans-serif;
+			font-size: 16px;
+		}
+
+		/* Reset font styles for icon elements */
+		.feather {
+			font-style: normal;
+			font-weight: normal;
+			line-height: 1;
+			display: inline-block;
 		}
 	</style>
 
@@ -176,7 +207,7 @@
 
 						<!-- Website Logo -->
 						<div class="logo-header logo-dark">
-							<a href="index.html"><img src="images/file.svg" alt="logo"></a>
+							<a href="index.html"><img src="images/logo.svg" alt="logo"></a>
 						</div>
 
 						<!-- Nav Toggle Button -->
@@ -405,12 +436,12 @@
 										class="btn btn-lg btn-icon btn-primary m-r20 wow fadeInUp" data-wow-delay="0.6s"
 										data-wow-duration="0.8s">
 										Appointment
-										<span class="right-icon"><i class="feather icon-arrow-right"></i></span>
+										<span class="right-icon"><i class="feather icon-arrow-right-circle"></i></span>
 									</a>
 									<a href="contact-us.html" class="btn btn-lg btn-icon btn-secondary wow fadeInUp"
 										data-wow-delay="0.6s" data-wow-duration="0.8s">
 										Contact Us
-										<span class="right-icon"><i class="feather icon-arrow-right"></i></span>
+										<span class="right-icon"><i class="feather icon-arrow-right-circle"></i></span>
 									</a>
 								</div>
 							</div>
