@@ -9,15 +9,10 @@ namespace WebApplication1.Models
         public int PaymentId { get; set; }
 
         [Required]
-        public int AppointmentId { get; set; }
-
-    
-
-        [Required]
         public decimal Amount { get; set; }
 
         [Required]
-        [MaxLength(3)]
+        [MaxLength(5)]
         public string Currency { get; set; } = "EGP"; // Egyptian Pound as default
 
         [Required]
@@ -27,6 +22,8 @@ namespace WebApplication1.Models
    
         [MaxLength(100)]
         public string? TransactionId { get; set; }
+        
+        public int AppointmentId { get; set; }
         public virtual Appointment Appointment { get; set; }
     }
 

@@ -29,6 +29,7 @@ namespace WebApplication1.Models
         public decimal? Weight { get; set; }
         public string Allergies { get; set; }
         public string Address { get; set; }
+        ICollection<Appointment> Appointments { get; set; }
      
      
     }

@@ -22,6 +22,9 @@ namespace WebApplication1.Models
         public string Address{ get; set; }
         [Required]
         public string PhoneNumber { get; set; } 
+        public ICollection<Doctor> Doctors { get; set; }
+        public ICollection<Appointment> Appointments { get; set; }
+
 
 
    

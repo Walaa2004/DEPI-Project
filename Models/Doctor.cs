@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
-// This from seif
+using System.ComponentModel.DataAnnotations.Schema;
+
 namespace WebApplication1.Models
 {
     public class Doctor
@@ -29,5 +30,10 @@ namespace WebApplication1.Models
         public string Gender { get; set; }
         [Required]
         public int Age { get; set; }
+        ICollection<Appointment> Appointments { get; set; }
+        public int? ClinicId { get; set; }
+        public Clinic Clinic { get; set; }
+        public int ScheduleId { get; set; }
+        public Schedule Schedule { get; set; }
     }
 }

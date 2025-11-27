@@ -8,7 +8,7 @@ namespace WebApplication1.Migrations
     /// <inheritdoc />
     public partial class m2 : Migration
     {
-        /// <inheritdoc />
+        /// <inheritdoc /> 
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropColumn(

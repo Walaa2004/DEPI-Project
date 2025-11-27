@@ -4,7 +4,7 @@ namespace WebApplication1.Models
     public class Schedule
     {
         [Key]
-        public int Scheduleid { get; set; }
+        public int ScheduleId { get; set; }
 
         public string DayOfWeek { get; set; }
 

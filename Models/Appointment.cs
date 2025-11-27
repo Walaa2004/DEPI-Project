@@ -9,13 +9,6 @@ namespace WebApplication1.Models
         public int AppointmentId { get; set; }
 
         [Required]
-        public int PatientId { get; set; }
-
-        [Required]
-        public int DoctorId { get; set; }
-        public int? ClinicId { get; set; }
-
-        [Required]
         public DateTime AppointmentDate { get; set; }
 
         [Required]
@@ -38,12 +31,17 @@ namespace WebApplication1.Models
 
 
         // Navigation Properties
-        public  Patient Patient { get; set; }
+        public int PatientId { get; set; }
+        public Patient Patient { get; set; }
 
-      
-        public   Doctor Doctor { get; set; }
-
+        public int? DoctorId { get; set; }
+        public Doctor Doctor { get; set; }
+        public int? ClinicId { get; set; }
         public Clinic Clinic { get; set; }
+        public int? PaymentId { get; set; }
+        public Payment? Payment { get; set; }
+        public int SessionId { get; set; }
+        public VideoCallSession? VideoCallSession { get; set; }
 
     
     }
