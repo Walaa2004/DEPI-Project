@@ -1,0 +1,110 @@
+﻿@model WebApplication1.Models.Doctor
+
+@{
+    ViewData["Title"] = "Edit Profile";
+}
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+
+            <div class="card shadow border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i> Edit Profile</h4>
+                </div>
+
+                <div class="card-body p-4">
+                    <form asp-action="Edit">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <input type="hidden" asp-for="DoctorId" />
+                        <input type="hidden" asp-for="Email" />
+                        <input type="hidden" asp-for="PasswordHashed" />
+                        <input type="hidden" asp-for="IsConfirmed" />
+
+                        <h6 class="text-primary border-bottom pb-2 mb-3">Personal Information</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">First Name</label>
+                                <input asp-for="FirstName" class="form-control" />
+                                <span asp-validation-for="FirstName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Last Name</label>
+                                <input asp-for="LastName" class="form-control" />
+                                <span asp-validation-for="LastName" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Phone Number</label>
+                                <input asp-for="PhoneNumber" class="form-control" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">Age</label>
+                                <input asp-for="Age" class="form-control" />
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label fw-bold">Gender</label>
+                                <select asp-for="Gender" class="form-select">
+                                    <option>Male</option>
+                                    <option>Female</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary border-bottom pb-2 mb-3 mt-3">Professional Details</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Specialization</label>
+                                <input asp-for="Specialization" class="form-control" />
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label fw-bold">Experience (Years)</label>
+                                <input asp-for="ExperienceYears" class="form-control" />
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-bold">License Number</label>
+                                <input asp-for="LicenseNumber" class="form-control bg-light" readonly />
+                                <small class="text-muted">License number cannot be changed.</small>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-bold">About Me</label>
+                                <textarea asp-for="About" rows="3" class="form-control"></textarea>
+                            </div>
+                        </div>
+
+                        <h6 class="text-primary border-bottom pb-2 mb-3 mt-3">Fees & Settings</h6>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Video Calls?</label>
+                                <select asp-for="AvailableForVideo" class="form-select">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Clinic Fee ($)</label>
+                                <input asp-for="ConsultationFee" class="form-control" />
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label fw-bold">Online Fee ($)</label>
+                                <input asp-for="OnlineFee" class="form-control" />
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label class="form-label fw-bold">Clinic Address</label>
+                                <input asp-for="Address" class="form-control" />
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-end gap-2 mt-4">
+                            <a asp-action="Dashboard" asp-route-id="@Model.DoctorId" class="btn btn-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-4 fw-bold">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

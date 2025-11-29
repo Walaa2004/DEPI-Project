@@ -1,0 +1,104 @@
+﻿@model WebApplication1.Models.Doctor
+
+@{
+    ViewData["Title"] = "Doctor Dashboard";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="fas fa-user-md text-primary me-2"></i> Welcome, Dr. @Model.LastName</h2>
+        <a asp-action="Login" class="btn btn-outline-danger btn-sm">
+            <i class="fas fa-sign-out-alt me-1"></i> Logout
+        </a>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center p-4">
+                    <div class="mb-3">
+                        <i class="fas fa-user-circle text-secondary" style="font-size: 5rem;"></i>
+                    </div>
+
+                    <h3 class="fw-bold">@Model.FirstName @Model.LastName</h3>
+                    <p class="text-primary fw-bold mb-1">@Model.Specialization</p>
+                    <p class="text-muted small mb-3">@Model.Email <br> @Model.PhoneNumber</p>
+
+                    <div class="d-flex justify-content-center align-items-center mb-3 gap-2">
+                        <span class="text-muted small">Account Status:</span>
+                        @if (Model.IsConfirmed == WebApplication1.Models.ConfirmationStatus.Confirmed)
+                        {
+                            <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Confirmed</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark"><i class="fas fa-clock me-1"></i> Pending</span>
+                        }
+                    </div>
+
+                    <hr />
+
+                    <a asp-action="Edit" asp-route-id="@Model.DoctorId" class="btn btn-primary w-100">
+                        <i class="fas fa-edit me-2"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i> Manage Work Schedule</h5>
+                </div>
+                <div class="card-body p-4">
+                    <p class="text-muted small mb-4">
+                        Set your working hours for the week. This will be visible to patients booking appointments.
+                    </p>
+
+                    <form asp-controller="Schedules" asp-action="Save" method="post">
+                        <input type="hidden" name="DoctorId" value="@Model.DoctorId" />
+
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label class="fw-bold form-label">Day of Week</label>
+                                <select name="DayOfWeek" class="form-select">
+                                    <option selected="@(Model.Schedule?.DayOfWeek == "Monday")">Monday</option>
+                                    <option selected="@(Model.Schedule?.DayOfWeek == "Tuesday")">Tuesday</option>
+                                    <option selected="@(Model.Schedule?.DayOfWeek == "Wednesday")">Wednesday</option>
+                                    <option selected="@(Model.Schedule?.DayOfWeek == "Thursday")">Thursday</option>
+                                    <option selected="@(Model.Schedule?.DayOfWeek == "Friday")">Friday</option>
+                                    <option selected="@(Model.Schedule?.DayOfWeek == "Saturday")">Saturday</option>
+                                    <option selected="@(Model.Schedule?.DayOfWeek == "Sunday")">Sunday</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="fw-bold form-label">Start Time</label>
+                                <input type="time" name="Starttime" class="form-control"
+                                       value="@(Model.Schedule?.Starttime.ToString(@"hh\:mm"))" required />
+                            </div>
+                            <div class="col-md-4">
+                                <label class="fw-bold form-label">End Time</label>
+                                <input type="time" name="Endtime" class="form-control"
+                                       value="@(Model.Schedule?.Endtime.ToString(@"hh\:mm"))" required />
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="fw-bold form-label">Max Patients Per Day</label>
+                            <input type="number" name="MaxPatientPerDay" class="form-control"
+                                   value="@(Model.Schedule?.MaxPatientPerDay ?? 10)" />
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save me-2"></i> Save Schedule
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

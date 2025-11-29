@@ -1,130 +1,131 @@
-﻿
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-9 col-md-11">
-                <div class="card shadow">
-                    <div class="card-body p-4">
+﻿@model WebApplication1.Models.Doctor
 
-                        <h3 class="mb-4 text-center">Doctor Registration</h3>
 
-                        <form action="/Doctor/Register" method="post">
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-9 col-md-11">
+            <div class="card shadow">
+                <div class="card-body p-4">
 
-                            <!-- Basic Info -->
-                            <div class="form-section-title">Personal Information</div>
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">First Name</label>
-                                    <input type="text" name="FirstName" class="form-control" required>
-                                </div>
+                    <h3 class="mb-4 text-center">Doctor Registration</h3>
 
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Last Name</label>
-                                    <input type="text" name="LastName" class="form-control" required>
-                                </div>
+                    <form asp-controller="Doctor" asp-action="Register" method="post">
+
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                        <div class="form-section-title text-primary border-bottom mb-3 pb-2">Personal Information</div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">First Name</label>
+                                <input asp-for="FirstName" class="form-control" required>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" name="Email" class="form-control" required>
-                                </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Last Name</label>
+                                <input asp-for="LastName" class="form-control" required>
+                            </div>
+                        </div>
 
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Phone Number</label>
-                                    <input type="text" name="PhoneNumber" class="form-control" required>
-                                </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Age</label>
-                                    <input type="number" name="Age" min="25" class="form-control" required>
-                                </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Email</label>
+                                <input asp-for="Email" type="email" class="form-control" required>
                             </div>
 
-                            <div class="row">
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Gender</label>
-                                    <select name="Gender" class="form-select" required>
-                                        <option disabled selected>Select</option>
-                                        <option>Male</option>
-                                        <option>Female</option>
-                                        <option>Other</option>
-                                    </select>
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label">Password</label>
-                                    <input type="password" name="PasswordHashed" class="form-control" required>
-                                </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Phone Number</label>
+                                <input asp-for="PhoneNumber" class="form-control" required>
                             </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Age</label>
+                                <input asp-for="Age" type="number" min="25" class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Gender</label>
+                                <select asp-for="Gender" class="form-select" required>
+                                    <option disabled selected>Select</option>
+                                    <option>Male</option>
+                                    <option>Female</option>
+                                    <option>Other</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Password</label>
+                                <input asp-for="PasswordHashed" type="password" class="form-control" required>
+                            </div>
+                        </div>
+
                         <hr class="my-4">
 
-                            <!-- Professional Info -->
-                            <div class="form-section-title">Professional Information</div>
+                        <div class="form-section-title text-primary border-bottom mb-3 pb-2">Professional Information</div>
 
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">License Number</label>
-                                    <input type="text" name="LicenseNumber" minlength="14" class="form-control" required>
-                                </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Experience (Years)</label>
-                                    <input type="number" name="ExperienceYears" min="0" class="form-control">
-                                </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Specialization</label>
-                                    <input type="text" name="Specialization" class="form-control">
-                                </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">License Number</label>
+                                <input asp-for="LicenseNumber" class="form-control" required>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">About</label>
-                                <textarea name="About" rows="3" class="form-control"
-                                          placeholder="Write a short professional bio..."></textarea>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Experience (Years)</label>
+                                <input asp-for="ExperienceYears" type="number" min="0" class="form-control">
                             </div>
+
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Specialization</label>
+                                <input asp-for="Specialization" class="form-control">
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">About</label>
+                            <textarea asp-for="About" rows="3" class="form-control" placeholder="Write a short professional bio..."></textarea>
+                        </div>
+
                         <hr class="my-4">
-                            <!-- Availability & Fees -->
-                            <div class="form-section-title">Availability & Fees</div>
 
-                            <div class="row">
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Available for Video Calls?</label>
-                                    <select name="AvailableForVideo" class="form-select">
-                                        <option value="true">Yes</option>
-                                        <option value="false">No</option>
-                                    </select>
-                                </div>
+                        <div class="form-section-title text-primary border-bottom mb-3 pb-2">Availability & Fees</div>
 
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Consultation Fee (Clinic)</label>
-                                    <input type="number" step="0.1" name="ConsultationFee" class="form-control">
-                                </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label">Online Fee</label>
-                                    <input type="number" step="0.1" name="OnlineFee" class="form-control">
-                                </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Available for Video Calls?</label>
+                                <select asp-for="AvailableForVideo" class="form-select">
+                                    <option value="true">Yes</option>
+                                    <option value="false">No</option>
+                                </select>
                             </div>
 
-                            <!-- Address -->
-                            <div class="form-section-title">Clinic Address</div>
-
-                            <div class="mb-3">
-                                <textarea name="Address" rows="2" class="form-control"></textarea>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Consultation Fee (Clinic)</label>
+                                <input asp-for="ConsultationFee" type="number" step="0.1" class="form-control">
                             </div>
 
-                         
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Online Fee</label>
+                                <input asp-for="OnlineFee" type="number" step="0.1" class="form-control">
+                            </div>
+                        </div>
 
-                            <button type="submit" class="btn btn-primary w-100 py-2">Register</button>
+                        <div class="form-section-title text-primary border-bottom mb-3 pb-2">Clinic Address</div>
 
-                        </form>
+                        <div class="mb-3">
+                            <textarea asp-for="Address" rows="2" class="form-control"></textarea>
+                        </div>
 
-                    </div>
+                        <button type="submit" class="btn btn-primary w-100 py-2">Register</button>
+
+                        <div class="text-center mt-3">
+                            <a asp-controller="Doctor" asp-action="Login">Already have an account? Login</a>
+                        </div>
+
+                    </form>
+
                 </div>
             </div>
         </div>
     </div>
-
-   
-
+</div>

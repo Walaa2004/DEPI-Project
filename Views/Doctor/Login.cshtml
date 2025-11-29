@@ -1,15 +1,17 @@
-﻿<body>
+﻿
+<body>
     <div class="container py-5">
         <div class="row justify-content-center">
             <div class="col-md-5">
                 <div class="card shadow-sm login-card">
                     <div class="card-body p-4">
-                        <h4 class="mb-3 login-title">Doctor Login</h4>
+                        <h4 class="mb-3 login-title text-center">Doctor Login</h4>
 
-                        <form action="/Admin/Login" method="post" autocomplete="off">
+                        <form asp-controller="Doctor" asp-action="Login" method="post" autocomplete="off">
+
                             <div class="mb-3">
-                                <label for="username" class="form-label">Username</label>
-                                <input id="username" name="username" type="text" class="form-control" required autofocus>
+                                <label for="username" class="form-label">Username (Email)</label>
+                                <input id="username" name="email" type="email" class="form-control" required autofocus>
                             </div>
 
                             <div class="mb-3">
@@ -17,13 +19,20 @@
                                 <input id="password" name="password" type="password" class="form-control" required>
                             </div>
 
+                            @if (ViewBag.Error != null)
+                            {
+                                <div class="alert alert-danger text-center py-2">
+                                    @ViewBag.Error
+                                </div>
+                            }
 
                             <button type="submit" class="btn btn-primary w-100">Login</button>
 
                             <hr class="my-4">
-                            <a href="/Doctor/Register" class="btn btn-outline-info">
+
+                            <a asp-controller="Doctor" asp-action="Register" class="btn btn-outline-info w-100">
                                 <i class="fas fa-user-md me-2"></i>
-                                Don't Have Account? Register 
+                                Don't Have Account? Register
                             </a>
                         </form>
                     </div>
@@ -31,5 +40,4 @@
             </div>
         </div>
     </div>
-
 </body>

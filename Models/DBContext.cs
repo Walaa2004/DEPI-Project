@@ -11,11 +11,10 @@ namespace WebApplication1.Models
         public DbSet<Schedule> Schedules { get; set; }
         public DbSet<VideoCallSession> VideoCallSessions { get; set; }
         public DbSet<Payment> Payments { get; set; }
-       protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            //optionsBuilder.UseSqlServer("Server=NISREEN;Database=DepiDB;Trusted_Connection=True;TrustServerCertificate=true;");
-
-            optionsBuilder.UseSqlServer("Server=NAREMAN-ADEL\\SQLEXPRESS;Database=DepiDB;Trusted_Connection=True;TrustServerCertificate=true;");
+            // I updated the Server name to match your screenshot: (localdb)\MSSQLLocalDB
+            optionsBuilder.UseSqlServer("Server=(localdb)\\MSSQLLocalDB;Database=DepiDB;Trusted_Connection=True;TrustServerCertificate=true;");
         }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
