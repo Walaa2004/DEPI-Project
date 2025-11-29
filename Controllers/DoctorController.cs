@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 
@@ -24,9 +24,9 @@ namespace WebApplication1.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(Doctor doctor)
         {
+            // FIX: Removed "Schedule" validation because the property is gone
             ModelState.Remove("Appointments");
             ModelState.Remove("Clinic");
-            ModelState.Remove("Schedule");
 
             if (ModelState.IsValid)
             {
@@ -52,8 +52,8 @@ namespace WebApplication1.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
+            // FIX: Removed .Include(d => d.Schedule) because the relationship was removed from the model
             var doctor = await _context.Doctors
-                .Include(d => d.Schedule)
                 .FirstOrDefaultAsync(d => d.Email == email);
 
             if (doctor == null || doctor.PasswordHashed != password)
@@ -72,17 +72,16 @@ namespace WebApplication1.Controllers
         {
             if (id == null) return NotFound();
 
-            var doctor = await _context.Doctors
-                .Include(d => d.Schedule)
-                .FirstOrDefaultAsync(m => m.DoctorId == id);
+            var doctor = await _context.Doctors.FirstOrDefaultAsync(m => m.DoctorId == id);
 
             if (doctor == null) return NotFound();
 
-            return View(doctor);
-        }
+            // FIX: Fetch the schedule manually and put it in ViewBag
+            ViewBag.CurrentSchedule = await _context.Schedules.FirstOrDefaultAsync(s => s.DoctorId == id);
 
-        // ==========================================
-        // 4. EDIT PROFILE (GET)  <-- NEW CODE STARTS HERE
+            return View(doctor);
+        }        // ==========================================
+        // 4. EDIT PROFILE (GET)
         // ==========================================
         public async Task<IActionResult> Edit(int? id)
         {
@@ -95,7 +94,7 @@ namespace WebApplication1.Controllers
         }
 
         // ==========================================
-        // 5. EDIT PROFILE (POST) <-- NEW CODE CONTINUES HERE
+        // 5. EDIT PROFILE (POST)
         // ==========================================
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -103,21 +102,19 @@ namespace WebApplication1.Controllers
         {
             if (id != doctor.DoctorId) return NotFound();
 
-            // Ignore validation for navigation properties
+            // FIX: Removed "Schedule" validation
             ModelState.Remove("Appointments");
             ModelState.Remove("Clinic");
-            ModelState.Remove("Schedule");
 
             if (ModelState.IsValid)
             {
                 try
                 {
-                    // 1. Fetch the existing doctor from DB to preserve critical info (like Password)
                     var existingDoctor = await _context.Doctors.FindAsync(id);
 
                     if (existingDoctor == null) return NotFound();
 
-                    // 2. Update ONLY the allowed fields
+                    // Update allowed fields
                     existingDoctor.FirstName = doctor.FirstName;
                     existingDoctor.LastName = doctor.LastName;
                     existingDoctor.PhoneNumber = doctor.PhoneNumber;
@@ -134,8 +131,6 @@ namespace WebApplication1.Controllers
                     existingDoctor.ConsultationFee = doctor.ConsultationFee;
                     existingDoctor.OnlineFee = doctor.OnlineFee;
 
-                    // Note: We are NOT updating PasswordHashed, Email, or IsConfirmed here for safety.
-
                     _context.Update(existingDoctor);
                     await _context.SaveChangesAsync();
                 }
@@ -145,11 +140,9 @@ namespace WebApplication1.Controllers
                     else throw;
                 }
 
-                // Redirect back to Dashboard
                 return RedirectToAction("Dashboard", new { id = doctor.DoctorId });
             }
             return View(doctor);
         }
-
-    } // <--- END OF CLASS
+    }
 }

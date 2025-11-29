@@ -2,6 +2,8 @@
 
 @{
     ViewData["Title"] = "Doctor Dashboard";
+    // FIX: Retrieve the schedule from the ViewBag since it's not in the Model anymore
+    var schedule = ViewBag.CurrentSchedule as WebApplication1.Models.Schedule;
 }
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -27,7 +29,7 @@
                     <p class="text-muted small mb-3">@Model.Email <br> @Model.PhoneNumber</p>
 
                     <div class="d-flex justify-content-center align-items-center mb-3 gap-2">
-                        <span class="text-muted small">Account Status:</span>
+                        <span class="text-muted small">Status:</span>
                         @if (Model.IsConfirmed == WebApplication1.Models.ConfirmationStatus.Confirmed)
                         {
                             <span class="badge bg-success"><i class="fas fa-check-circle me-1"></i> Confirmed</span>
@@ -54,7 +56,7 @@
                 </div>
                 <div class="card-body p-4">
                     <p class="text-muted small mb-4">
-                        Set your working hours for the week. This will be visible to patients booking appointments.
+                        Set your working hours for the week. This will be visible to patients.
                     </p>
 
                     <form asp-controller="Schedules" asp-action="Save" method="post">
@@ -64,31 +66,31 @@
                             <div class="col-md-4">
                                 <label class="fw-bold form-label">Day of Week</label>
                                 <select name="DayOfWeek" class="form-select">
-                                    <option selected="@(Model.Schedule?.DayOfWeek == "Monday")">Monday</option>
-                                    <option selected="@(Model.Schedule?.DayOfWeek == "Tuesday")">Tuesday</option>
-                                    <option selected="@(Model.Schedule?.DayOfWeek == "Wednesday")">Wednesday</option>
-                                    <option selected="@(Model.Schedule?.DayOfWeek == "Thursday")">Thursday</option>
-                                    <option selected="@(Model.Schedule?.DayOfWeek == "Friday")">Friday</option>
-                                    <option selected="@(Model.Schedule?.DayOfWeek == "Saturday")">Saturday</option>
-                                    <option selected="@(Model.Schedule?.DayOfWeek == "Sunday")">Sunday</option>
+                                    <option selected="@(schedule?.DayOfWeek == "Monday")">Monday</option>
+                                    <option selected="@(schedule?.DayOfWeek == "Tuesday")">Tuesday</option>
+                                    <option selected="@(schedule?.DayOfWeek == "Wednesday")">Wednesday</option>
+                                    <option selected="@(schedule?.DayOfWeek == "Thursday")">Thursday</option>
+                                    <option selected="@(schedule?.DayOfWeek == "Friday")">Friday</option>
+                                    <option selected="@(schedule?.DayOfWeek == "Saturday")">Saturday</option>
+                                    <option selected="@(schedule?.DayOfWeek == "Sunday")">Sunday</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
                                 <label class="fw-bold form-label">Start Time</label>
                                 <input type="time" name="Starttime" class="form-control"
-                                       value="@(Model.Schedule?.Starttime.ToString(@"hh\:mm"))" required />
+                                       value="@(schedule?.Starttime.ToString(@"hh\:mm"))" required />
                             </div>
                             <div class="col-md-4">
                                 <label class="fw-bold form-label">End Time</label>
                                 <input type="time" name="Endtime" class="form-control"
-                                       value="@(Model.Schedule?.Endtime.ToString(@"hh\:mm"))" required />
+                                       value="@(schedule?.Endtime.ToString(@"hh\:mm"))" required />
                             </div>
                         </div>
 
                         <div class="mb-4">
                             <label class="fw-bold form-label">Max Patients Per Day</label>
                             <input type="number" name="MaxPatientPerDay" class="form-control"
-                                   value="@(Model.Schedule?.MaxPatientPerDay ?? 10)" />
+                                   value="@(schedule?.MaxPatientPerDay ?? 10)" />
                         </div>
 
                         <div class="d-grid">
