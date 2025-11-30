@@ -45,6 +45,6 @@ namespace WebApplication1.Models
     {
         Pending = 1,
         Confirmed = 2,
-        Cancelled = 3
+        Rejected = 3
     }
 }

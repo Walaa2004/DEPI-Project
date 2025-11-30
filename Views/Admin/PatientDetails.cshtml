@@ -1,0 +1,196 @@
+﻿@model WebApplication1.Models.Patient
+
+@{
+    ViewData["Title"] = "Patient Details";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>
+            <i class="fas fa-user"></i> Patient Details
+        </h1>
+        <a href="@Url.Action("Patients", "Admin")" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Patients
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Personal Information -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-user-circle"></i> Personal Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Patient ID:</th>
+                            <td>@Model.PatientId</td>
+                        </tr>
+                        <tr>
+                            <th>Full Name:</th>
+                            <td>@Model.FirstName @Model.LastName</td>
+                        </tr>
+                        <tr>
+                            <th>Email:</th>
+                            <td>@Model.Email</td>
+                        </tr>
+                        <tr>
+                            <th>Phone Number:</th>
+                            <td>@Model.PhoneNumber</td>
+                        </tr>
+                        <tr>
+                            <th>Age:</th>
+                            <td>@Model.Age years</td>
+                        </tr>
+                        <tr>
+                            <th>Gender:</th>
+                            <td>
+                                @if (Model.Gender == "Male")
+                                {
+                                    <span class="badge bg-primary">Male</span>
+                                }
+                                else if (Model.Gender == "Female")
+                                {
+                                    <span class="badge bg-pink">Female</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@Model.Gender</span>
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Medical Information -->
+        <div class="col-md-6 mb-4">
+            <div class="card border-0 shadow-sm h-100">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="fas fa-heartbeat"></i> Medical Information</h5>
+                </div>
+                <div class="card-body">
+                    <table class="table table-borderless">
+                        <tr>
+                            <th width="40%">Height:</th>
+                            <td>@(Model.Height?.ToString("F2") ?? "N/A") cm</td>
+                        </tr>
+                        <tr>
+                            <th>Weight:</th>
+                            <td>@(Model.Weight?.ToString("F2") ?? "N/A") kg</td>
+                        </tr>
+                        <tr>
+                            <th>Blood Group:</th>
+                            <td>@(Model.BloodGroup ?? "N/A")</td>
+                        </tr>
+                        <tr>
+                            <th>Allergies:</th>
+                            <td>@(Model.Allergies ?? "None")</td>
+                        </tr>
+                        <tr>
+                            <th>Address:</th>
+                            <td>@(Model.Address ?? "N/A")</td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Appointments History -->
+    <div class="card border-0 shadow-sm">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-calendar-alt"></i> Appointments History</h5>
+        </div>
+        <div class="card-body">
+            @if (ViewBag.Appointments != null && ((List<WebApplication1.Models.Appointment>)ViewBag.Appointments).Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Appointment ID</th>
+                                <th>Doctor ID</th>
+                                <th>Date</th>
+                                <th>Type</th>
+                                <th>Status</th>
+                                <th>Fee</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var appointment in (List<WebApplication1.Models.Appointment>)ViewBag.Appointments)
+                            {
+                                <tr>
+                                    <td>@appointment.AppointmentId</td>
+                                    <td>@appointment.DoctorId</td>
+                                    <td>@appointment.AppointmentDate.ToString("dd MMM yyyy, hh:mm tt")</td>
+                                    <td>
+                                        @if (appointment.Type.ToString() == "InPerson")
+                                        {
+                                            <span class="badge bg-primary">In-Person</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-info">Online</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @{
+                                            var status = appointment.Status.ToString();
+                                        }
+                                        @if (status == "Scheduled")
+                                        {
+                                            <span class="badge bg-warning text-dark">Scheduled</span>
+                                        }
+                                        else if (status == "Completed")
+                                        {
+                                            <span class="badge bg-success">Completed</span>
+                                        }
+                                        else if (status == "Cancelled")
+                                        {
+                                            <span class="badge bg-danger">Cancelled</span>
+                                        }
+                                        else if (status == "NoShow")
+                                        {
+                                            <span class="badge bg-secondary">No Show</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">@status</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (appointment.Fee > 0)
+                                        {
+                                            @appointment.Fee.ToString("C")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">Free</span>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-info mb-0">
+                    <i class="fas fa-info-circle"></i> No appointments found for this patient.
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<style>
+    .bg-pink {
+        background-color: #e83e8c !important;
+    }
+</style>
