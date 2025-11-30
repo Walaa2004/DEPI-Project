@@ -21,18 +21,7 @@ namespace WebApplication1.Models
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configure one-to-one: Payment is the dependent with FK Payment.AppointmentId
-            modelBuilder.Entity<Appointment>()
-                .HasOne(a => a.Payment)
-                .WithOne(p => p.Appointment)
-                .HasForeignKey<Payment>(p => p.AppointmentId)
-                .OnDelete(DeleteBehavior.Cascade);
-            // Configure one-to-one: Schedule is dependent with FK Schedule.DoctorId
-            modelBuilder.Entity<Doctor>()
-                .HasOne(d => d.Schedule)
-                .WithOne(s => s.Doctor)
-                .HasForeignKey<Schedule>(s => s.DoctorId)
-                .OnDelete(DeleteBehavior.Cascade);
+            
         }
 
     }
