@@ -36,12 +36,13 @@ namespace WebApplication1.Models
         public int Age { get; set; }
 
         // **FIX: Add the isConfirmed property**
-        public ConfirmationStatus IsConfirmed { get; set; } = ConfirmationStatus.Pending;
+        public ConfirmationStatus IsConfirmed { get; set; }
 
         public ICollection<Appointment> Appointments { get; set; }
         public int? ClinicId { get; set; }
         public Clinic Clinic { get; set; }
-        public Schedule? Schedule { get; set; }
+        // Change this from Schedule? Schedule to:
+        public Schedule Schedule{ get; set; }
 
     }
 

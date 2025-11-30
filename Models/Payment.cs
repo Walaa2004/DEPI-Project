@@ -15,7 +15,7 @@ namespace WebApplication1.Models
 
         [Required]
         [MaxLength(5)]
-        public string Currency { get; set; } = "EGP"; // Egyptian Pound as default
+        public string Currency { get; set; } // Egyptian Pound as default
 
         [Required]
         public PaymentStatus PaymentStatus { get; set; }

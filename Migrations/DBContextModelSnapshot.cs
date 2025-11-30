@@ -43,8 +43,7 @@ namespace WebApplication1.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal>("Fee")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("PatientId")
                         .HasColumnType("int");
@@ -132,20 +131,17 @@ namespace WebApplication1.Migrations
                         .HasColumnType("int");
 
                     b.Property<bool>("AvailableForVideo")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("bit")
-                        .HasDefaultValue(false);
+                        .HasColumnType("bit");
 
                     b.Property<int?>("ClinicId")
                         .HasColumnType("int");
 
                     b.Property<decimal>("ConsultationFee")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ExperienceYears")
                         .HasColumnType("int");
@@ -159,9 +155,7 @@ namespace WebApplication1.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("IsConfirmed")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasDefaultValue(1);
+                        .HasColumnType("int");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -169,11 +163,10 @@ namespace WebApplication1.Migrations
 
                     b.Property<string>("LicenseNumber")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal>("OnlineFee")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<string>("PasswordHashed")
                         .IsRequired()
@@ -190,12 +183,6 @@ namespace WebApplication1.Migrations
                     b.HasKey("DoctorId");
 
                     b.HasIndex("ClinicId");
-
-                    b.HasIndex("Email")
-                        .IsUnique();
-
-                    b.HasIndex("LicenseNumber")
-                        .IsUnique();
 
                     b.ToTable("Doctors");
                 });
@@ -224,7 +211,7 @@ namespace WebApplication1.Migrations
 
                     b.Property<string>("Email")
                         .IsRequired()
-                        .HasColumnType("nvarchar(450)");
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
@@ -254,9 +241,6 @@ namespace WebApplication1.Migrations
 
                     b.HasKey("PatientId");
 
-                    b.HasIndex("Email")
-                        .IsUnique();
-
                     b.ToTable("Patients");
                 });
 
@@ -269,18 +253,15 @@ namespace WebApplication1.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PaymentId"));
 
                     b.Property<decimal>("Amount")
-                        .HasPrecision(10, 2)
-                        .HasColumnType("decimal(10,2)");
+                        .HasColumnType("decimal(18,2)");
 
                     b.Property<int>("AppointmentId")
                         .HasColumnType("int");
 
                     b.Property<string>("Currency")
                         .IsRequired()
-                        .ValueGeneratedOnAdd()
                         .HasMaxLength(5)
-                        .HasColumnType("nvarchar(5)")
-                        .HasDefaultValue("EGP");
+                        .HasColumnType("nvarchar(5)");
 
                     b.Property<DateTime?>("PaidAt")
                         .HasColumnType("datetime2");
@@ -294,7 +275,8 @@ namespace WebApplication1.Migrations
 
                     b.HasKey("PaymentId");
 
-                    b.HasIndex("AppointmentId");
+                    b.HasIndex("AppointmentId")
+                        .IsUnique();
 
                     b.ToTable("Payments");
                 });
@@ -325,7 +307,8 @@ namespace WebApplication1.Migrations
 
                     b.HasKey("ScheduleId");
 
-                    b.HasIndex("DoctorId");
+                    b.HasIndex("DoctorId")
+                        .IsUnique();
 
                     b.ToTable("Schedules");
                 });
@@ -372,13 +355,11 @@ namespace WebApplication1.Migrations
                 {
                     b.HasOne("WebApplication1.Models.Clinic", "Clinic")
                         .WithMany("Appointments")
-                        .HasForeignKey("ClinicId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ClinicId");
 
                     b.HasOne("WebApplication1.Models.Doctor", "Doctor")
                         .WithMany("Appointments")
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("DoctorId");
 
                     b.HasOne("WebApplication1.Models.Patient", "Patient")
                         .WithMany("Appointments")
@@ -397,8 +378,7 @@ namespace WebApplication1.Migrations
                 {
                     b.HasOne("WebApplication1.Models.Clinic", "Clinic")
                         .WithMany("Doctors")
-                        .HasForeignKey("ClinicId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .HasForeignKey("ClinicId");
 
                     b.Navigation("Clinic");
                 });
@@ -406,8 +386,8 @@ namespace WebApplication1.Migrations
             modelBuilder.Entity("WebApplication1.Models.Payment", b =>
                 {
                     b.HasOne("WebApplication1.Models.Appointment", "Appointment")
-                        .WithMany()
-                        .HasForeignKey("AppointmentId")
+                        .WithOne("Payment")
+                        .HasForeignKey("WebApplication1.Models.Payment", "AppointmentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -417,8 +397,8 @@ namespace WebApplication1.Migrations
             modelBuilder.Entity("WebApplication1.Models.Schedule", b =>
                 {
                     b.HasOne("WebApplication1.Models.Doctor", "Doctor")
-                        .WithMany()
-                        .HasForeignKey("DoctorId")
+                        .WithOne("Schedule")
+                        .HasForeignKey("WebApplication1.Models.Schedule", "DoctorId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
@@ -438,6 +418,8 @@ namespace WebApplication1.Migrations
 
             modelBuilder.Entity("WebApplication1.Models.Appointment", b =>
                 {
+                    b.Navigation("Payment");
+
                     b.Navigation("VideoCallSession");
                 });
 
@@ -451,9 +433,14 @@ namespace WebApplication1.Migrations
             modelBuilder.Entity("WebApplication1.Models.Doctor", b =>
                 {
                     b.Navigation("Appointments");
+
+                    b.Navigation("Schedule")
+                        .IsRequired();
                 });
 
-                    b.Navigation("Schedule");
+            modelBuilder.Entity("WebApplication1.Models.Patient", b =>
+                {
+                    b.Navigation("Appointments");
                 });
 #pragma warning restore 612, 618
         }

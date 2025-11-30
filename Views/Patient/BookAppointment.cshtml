@@ -1,0 +1,372 @@
+﻿@model WebApplication1.Models.Appointment
+@{
+    ViewData["Title"] = "Book Appointment";
+    var patient = ViewBag.Patient as WebApplication1.Models.Patient;
+    var doctors = ViewBag.Doctors as List<WebApplication1.Models.Doctor>;
+    var clinics = ViewBag.Clinics as List<WebApplication1.Models.Clinic>;
+    var appointmentTypes = ViewBag.AppointmentTypes as List<WebApplication1.Models.AppointmentType>;
+}
+
+<div class="container mt-4">
+    <!-- Header Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="text-primary mb-1">
+                        <i class="fas fa-calendar-plus me-2"></i>Book New Appointment
+                    </h2>
+                    <p class="text-muted mb-0">@patient?.FirstName @patient?.LastName</p>
+                </div>
+                <div class="text-end">
+                    <a href="@Url.Action("Profile", new { id = patient?.PatientId })" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i>Back to Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error/Success Messages -->
+    @if (ViewBag.Error != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i>@ViewBag.Error
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (ViewBag.Success != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i>@ViewBag.Success
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Booking Form -->
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-form me-2"></i>Appointment Details
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form asp-action="BookAppointment" method="post" id="appointmentForm">
+                        <input type="hidden" asp-for="PatientId" value="@patient?.PatientId" />
+
+                        <!-- Appointment Type Selection -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-video me-1"></i>Appointment Type <span class="text-danger">*</span>
+                                </label>
+                                <div class="row">
+                                    @foreach (var type in appointmentTypes)
+                                    {
+                                        <div class="col-md-6">
+                                            <div class="card appointment-type-card" data-type="@type">
+                                                <div class="card-body text-center p-3">
+                                                    <input type="radio" asp-for="Type" value="@type" id="type_@type" class="d-none appointment-type-radio" />
+                                                    <label for="type_@type" class="w-100 mb-0" style="cursor: pointer;">
+                                                        @if (type == WebApplication1.Models.AppointmentType.Video)
+                                                        {
+                                                            <i class="fas fa-video fa-2x text-info mb-2 d-block"></i>
+                                                            <h6 class="mb-1">Video Consultation</h6>
+                                                            <small class="text-muted">Online meeting with doctor</small>
+                                                        }
+                                                        else
+                                                        {
+                                                            <i class="fas fa-user-md fa-2x text-primary mb-2 d-block"></i>
+                                                            <h6 class="mb-1">In-Person Visit</h6>
+                                                            <small class="text-muted">Visit doctor at clinic</small>
+                                                        }
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                </div>
+                                <span asp-validation-for="Type" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Doctor Selection -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label asp-for="DoctorId" class="form-label fw-semibold">
+                                    <i class="fas fa-user-md me-1"></i>Select Doctor <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="DoctorId" class="form-select" id="doctorSelect" required>
+                                    <option value="">Choose a doctor...</option>
+                                    @if (doctors != null)
+                                    {
+                                        @foreach (var doctor in doctors)
+                                        {
+                                            <option value="@doctor.DoctorId"
+                                                    data-specialization="@doctor.Specialization"
+                                                    data-consultation-fee="@doctor.ConsultationFee"
+                                                    data-online-fee="@doctor.OnlineFee"
+                                                    data-clinic="@doctor.Clinic?.ClinicName"
+                                                    data-video-available="@doctor.AvailableForVideo">
+                                                Dr. @doctor.FirstName @doctor.LastName - @doctor.Specialization
+                                                @if (doctor.Clinic != null)
+                                                {
+                                                    <text>(@doctor.Clinic.ClinicName, @doctor.Clinic.City)</text>
+                                                }
+                                            </option>
+                                        }
+                                    }
+                                </select>
+                                <span asp-validation-for="DoctorId" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Doctor Info Card -->
+                        <div class="row mb-3" id="doctorInfoCard" style="display: none;">
+                            <div class="col-12">
+                                <div class="card bg-light">
+                                    <div class="card-body p-3">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <h6 class="mb-2" id="doctorName"></h6>
+                                                <p class="mb-1"><strong>Specialization:</strong> <span id="doctorSpecialization"></span></p>
+                                                <p class="mb-0"><strong>Clinic:</strong> <span id="doctorClinic"></span></p>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <p class="mb-1"><strong>Consultation Fee:</strong> <span id="consultationFee"></span> EGP</p>
+                                                <p class="mb-0"><strong>Online Fee:</strong> <span id="onlineFee"></span> EGP</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Date Selection -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="AppointmentDate" class="form-label fw-semibold">
+                                    <i class="fas fa-calendar me-1"></i>Appointment Date <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="AppointmentDate" type="date" class="form-control"
+                                       min="@ViewBag.MinDate" max="@ViewBag.MaxDate" id="appointmentDate" required />
+                                <span asp-validation-for="AppointmentDate" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold">
+                                    <i class="fas fa-clock me-1"></i>Available Time Slots <span class="text-danger">*</span>
+                                </label>
+                                <select name="selectedTimeSlot" class="form-select" id="timeSlotSelect" required>
+                                    <option value="">Select date first...</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Symptoms (Optional) -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label asp-for="Symptoms" class="form-label fw-semibold">
+                                    <i class="fas fa-notes-medical me-1"></i>Symptoms or Reason for Visit
+                                </label>
+                                <textarea asp-for="Symptoms" class="form-control" rows="3"
+                                          placeholder="Please describe your symptoms or reason for the appointment..."></textarea>
+                                <span asp-validation-for="Symptoms" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" class="btn btn-primary btn-lg">
+                                    <i class="fas fa-calendar-check me-2"></i>Book Appointment
+                                </button>
+                                <a href="@Url.Action("Profile", new { id = patient?.PatientId })" class="btn btn-outline-secondary btn-lg ms-2">
+                                    Cancel
+                                </a>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointment Summary Sidebar -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Booking Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6>Patient Information</h6>
+                        <p class="mb-1"><strong>Name:</strong> @patient?.FirstName @patient?.LastName</p>
+                        <p class="mb-1"><strong>Email:</strong> @patient?.Email</p>
+                        <p class="mb-0"><strong>Phone:</strong> @patient?.PhoneNumber</p>
+                    </div>
+
+                    <div class="mb-3" id="appointmentSummary" style="display: none;">
+                        <h6>Appointment Summary</h6>
+                        <p class="mb-1" id="summaryType"></p>
+                        <p class="mb-1" id="summaryDoctor"></p>
+                        <p class="mb-1" id="summaryDate"></p>
+                        <p class="mb-1" id="summaryTime"></p>
+                        <p class="mb-0" id="summaryFee"></p>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-1"></i>
+                        <small>
+                            <strong>Note:</strong> Your appointment will be confirmed within 24 hours.
+                            You will receive a confirmation email once approved.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .appointment-type-card {
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+        .appointment-type-card:hover {
+            border-color: #007bff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .appointment-type-card.selected {
+            border-color: #007bff;
+            background-color: #f8f9ff;
+        }
+
+    .time-slot-btn {
+        margin: 2px;
+        border-radius: 20px;
+    }
+
+        .time-slot-btn.selected {
+            background-color: #007bff;
+            border-color: #007bff;
+            color: white;
+        }
+</style>
+
+<script>
+    $(document).ready(function() {
+        // Handle appointment type selection
+        $('.appointment-type-card').click(function() {
+            $('.appointment-type-card').removeClass('selected');
+            $(this).addClass('selected');
+            $(this).find('input[type="radio"]').prop('checked', true);
+            updateAppointmentSummary();
+            validateDoctorSelection();
+        });
+
+        // Handle doctor selection
+        $('#doctorSelect').change(function() {
+            var selectedOption = $(this).find('option:selected');
+            if (selectedOption.val()) {
+                showDoctorInfo(selectedOption);
+                $('#timeSlotSelect').html('<option value="">Select date first...</option>');
+            } else {
+                $('#doctorInfoCard').hide();
+                $('#timeSlotSelect').html('<option value="">Choose a doctor first...</option>');
+            }
+            updateAppointmentSummary();
+            validateDoctorSelection();
+        });
+
+        // Handle date selection
+        $('#appointmentDate').change(function() {
+            loadAvailableTimeSlots();
+            updateAppointmentSummary();
+        });
+
+        // Handle time slot selection
+        $('#timeSlotSelect').change(function() {
+            updateAppointmentSummary();
+        });
+
+        function showDoctorInfo(option) {
+            $('#doctorName').text('Dr. ' + option.text().split(' - ')[0].replace('Dr. ', ''));
+            $('#doctorSpecialization').text(option.data('specialization'));
+            $('#doctorClinic').text(option.data('clinic') || 'Online Consultation');
+            $('#consultationFee').text(option.data('consultation-fee'));
+            $('#onlineFee').text(option.data('online-fee'));
+            $('#doctorInfoCard').show();
+        }
+
+        function validateDoctorSelection() {
+            var selectedType = $('input[name="Type"]:checked').val();
+            var selectedDoctor = $('#doctorSelect option:selected');
+
+            if (selectedType === '1' && selectedDoctor.val()) { // Video consultation
+                var videoAvailable = selectedDoctor.data('video-available');
+                if (!videoAvailable) {
+                    alert('Selected doctor is not available for video consultations. Please choose another doctor or select in-person visit.');
+                    $('#doctorSelect').val('');
+                    $('#doctorInfoCard').hide();
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        function loadAvailableTimeSlots() {
+            var doctorId = $('#doctorSelect').val();
+            var selectedDate = $('#appointmentDate').val();
+
+            if (!doctorId || !selectedDate) {
+                $('#timeSlotSelect').html('<option value="">Select doctor and date first...</option>');
+                return;
+            }
+
+            // Generate time slots (9 AM to 5 PM, 30-minute intervals)
+            var timeSlots = [];
+            for (var hour = 9; hour < 17; hour++) {
+                for (var minute = 0; minute < 60; minute += 30) {
+                    var timeStr = hour.toString().padStart(2, '0') + ':' + minute.toString().padStart(2, '0');
+                    timeSlots.push(timeStr);
+                }
+            }
+
+            var options = '<option value="">Choose a time slot...</option>';
+            timeSlots.forEach(function(slot) {
+                options += '<option value="' + slot + '">' + slot + '</option>';
+            });
+
+            $('#timeSlotSelect').html(options);
+        }
+
+        function updateAppointmentSummary() {
+            var type = $('input[name="Type"]:checked').val();
+            var doctor = $('#doctorSelect option:selected');
+            var date = $('#appointmentDate').val();
+            var time = $('#timeSlotSelect').val();
+
+            if (type || doctor.val() || date || time) {
+                $('#summaryType').html('<strong>Type:</strong> ' + (type === '1' ? 'Video Consultation' : type === '2' ? 'In-Person Visit' : 'Not selected'));
+                $('#summaryDoctor').html('<strong>Doctor:</strong> ' + (doctor.val() ? doctor.text().split(' - ')[0] : 'Not selected'));
+                $('#summaryDate').html('<strong>Date:</strong> ' + (date ? new Date(date).toLocaleDateString() : 'Not selected'));
+                $('#summaryTime').html('<strong>Time:</strong> ' + (time || 'Not selected'));
+
+                var fee = type === '1' ? doctor.data('online-fee') : doctor.data('consultation-fee');
+                $('#summaryFee').html('<strong>Fee:</strong> ' + (fee ? fee + ' EGP' : 'TBD'));
+
+                $('#appointmentSummary').show();
+            } else {
+                $('#appointmentSummary').hide();
+            }
+        }
+    });
+</script>

@@ -20,94 +20,95 @@
                             </div>
                         }
 
+                  
+
                         @if (Model != null && Model.Any())
                         {
-                            <!-- Summary Cards -->
-                            <div class="row mb-4">
-                                <div class="col-md-3">
-                                    <div class="card bg-primary text-white">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-receipt fa-2x mb-2"></i>
-                                            <h4>@Model.Count</h4>
-                                            <p class="mb-0">Total Payments</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-success text-white">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-money-bill-wave fa-2x mb-2"></i>
-                                            <h4>@Model.Sum(p => p.Amount).ToString("F2")</h4>
-                                            <p class="mb-0">Total Amount (@(Model.FirstOrDefault()?.Currency ?? "EGP"))</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-info text-white">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-check-circle fa-2x mb-2"></i>
-                                            <h4>@Model.Count(p => p.PaymentStatus.ToString() == "Completed")</h4>
-                                            <p class="mb-0">Completed</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-3">
-                                    <div class="card bg-warning text-white">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-clock fa-2x mb-2"></i>
-                                            <h4>@Model.Count(p => p.PaymentStatus.ToString() == "Pending")</h4>
-                                            <p class="mb-0">Pending</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
                             <!-- Payment List -->
                             <div class="row">
                                 @foreach (var payment in Model)
                                 {
                                     <div class="col-md-6 mb-4">
-                                        <div class="card payment-card h-100 border-start border-4 @(GetPaymentStatusBorderClass(payment.PaymentStatus.ToString()))">
+                                        <div class="card payment-card h-100 @(payment.PaymentStatus)">
                                             <div class="card-header bg-light">
                                                 <div class="d-flex justify-content-between align-items-center">
                                                     <h6 class="mb-0">
                                                         <i class="fas fa-hashtag me-1"></i>
-                                                        Payment ID: @payment.PaymentId
+                                                        Payment #@payment.PaymentId
                                                     </h6>
-                                                    <span class="badge status-badge @GetPaymentStatusClass(payment.PaymentStatus.ToString())">
+                                                    <span class="badge status-badge @(payment.PaymentStatus)">
                                                         @payment.PaymentStatus.ToString()
                                                     </span>
                                                 </div>
                                             </div>
                                             <div class="card-body">
-                                                <div class="row">
+                                                <div class="row mb-3">
                                                     <div class="col-6">
-                                                        <p class="mb-2">
-                                                            <strong>Amount:</strong><br>
-                                                            <span class="badge currency-badge fs-6">
-                                                                @payment.Amount.ToString("F2") @payment.Currency
-                                                            </span>
-                                                        </p>
-                                                        <p class="mb-2">
-                                                            <strong>Appointment:</strong><br>
-                                                            <span class="text-muted">#@payment.AppointmentId</span>
-                                                        </p>
+                                                        <strong>Amount:</strong><br>
+                                                        <span class="badge currency-badge fs-6">
+                                                            @payment.Amount @payment.Currency
+                                                        </span>
                                                     </div>
                                                     <div class="col-6">
-                                                        <p class="mb-2">
-                                                            <strong>Payment Date:</strong><br>
-                                                            <span class="text-muted">
-                                                                @(payment.PaidAt?.ToString("MMM dd, yyyy") ?? "Not paid yet")
-                                                            </span>
-                                                        </p>
-                                                        <p class="mb-2">
-                                                            <strong>Transaction ID:</strong><br>
-                                                            <span class="text-muted">
-                                                                @(payment.TransactionId ?? "N/A")
-                                                            </span>
-                                                        </p>
+                                                        <strong>Date:</strong><br>
+                                                        <span class="text-muted">
+                                                            @(payment.PaidAt?.ToString("MMM dd, yyyy") ?? "Not paid")
+                                                        </span>
                                                     </div>
                                                 </div>
+
+                                                <div class="row mb-3">
+                                                    <div class="col-12">
+                                                        <strong>Appointment Details:</strong><br>
+                                                        @if (payment.Appointment != null)
+                                                        {
+                                                            <span class="text-muted">
+                                                                @payment.Appointment.AppointmentDate.ToString("MMM dd, yyyy") at
+                                                                @payment.Appointment.AppointmentTime.ToString(@"hh\:mm")
+                                                            </span>
+                                                
+                                                            <br>
+
+                                                            @if (payment.Appointment.Doctor != null)
+                                                            {
+                                                                <small class="text-muted">
+                                                                    <i class="fas fa-user-md me-1"></i>Dr. @payment.Appointment.Doctor.FirstName @payment.Appointment.Doctor.LastName<br>
+                                                                </small>
+                                                            }
+
+                                                            @if (payment.Appointment.Clinic != null)
+                                                            {
+                                                                <small class="text-muted">
+                                                                    <i class="fas fa-hospital me-1"></i>@payment.Appointment.Clinic.ClinicName<br>
+                                                                </small>
+                                                            }
+                                                            else
+                                                            {
+                                                                <small class="text-muted">
+                                                                    <i class="fas fa-video me-1"></i>Online Consultation<br>
+                                                                </small>
+                                                            }
+
+                                                            <small class="text-muted">
+                                                                <i class="fas fa-calendar me-1"></i>@payment.Appointment.Type.ToString()
+                                                            </small>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="text-muted">Appointment #@payment.AppointmentId</span>
+                                                        }
+                                                    </div>
+                                                </div>
+
+                                                @if (!string.IsNullOrEmpty(payment.TransactionId))
+                                                {
+                                                    <div class="row mb-2">
+                                                        <div class="col-12">
+                                                            <strong>Transaction ID:</strong><br>
+                                                            <code>@payment.TransactionId</code>
+                                                        </div>
+                                                    </div>
+                                                }
 
                                                 @if (payment.PaidAt.HasValue)
                                                 {
@@ -119,54 +120,21 @@
                                                     </div>
                                                 }
 
-                                                <!-- Action Buttons -->
-                                                <div class="mt-3 d-flex gap-2">
-                                                    <button class="btn btn-sm btn-outline-primary" onclick="viewPaymentDetails(@payment.PaymentId)">
-                                                        <i class="fas fa-eye me-1"></i>Details
-                                                    </button>
-                                                    @if (payment.PaymentStatus.ToString() == "Completed")
-                                                    {
-                                                        <button class="btn btn-sm btn-outline-success" onclick="downloadReceipt(@payment.PaymentId)">
-                                                            <i class="fas fa-download me-1"></i>Receipt
-                                                        </button>
-                                                    }
-                                                </div>
+                                              
                                             </div>
                                         </div>
                                     </div>
                                 }
                             </div>
-
-                            <!-- Pagination (if needed) -->
-                            @if (Model.Count > 10)
-                            {
-                                <nav aria-label="Payment pagination">
-                                    <ul class="pagination justify-content-center">
-                                        <li class="page-item">
-                                            <a class="page-link" href="#" aria-label="Previous">
-                                                <span aria-hidden="true">&laquo;</span>
-                                            </a>
-                                        </li>
-                                        <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                                        <li class="page-item"><a class="page-link" href="#">2</a></li>
-                                        <li class="page-item">
-                                            <a class="page-link" href="#" aria-label="Next">
-                                                <span aria-hidden="true">&raquo;</span>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </nav>
-                            }
                         }
                         else
                         {
                             <div class="alert alert-info text-center py-5">
                                 <i class="fas fa-credit-card fa-5x text-muted mb-4"></i>
                                 <h4>No Payment History</h4>
-                                <p class="text-muted mb-4">You don't have any payment records yet. Make an appointment to see your payment history here.</p>
+                                <p class="text-muted mb-4">You don't have any payment records yet.</p>
                                 <a href="/Patient/Profile/@ViewBag.Patient?.PatientId" class="btn btn-primary">
-                                    <i class="fas fa-arrow-left me-2"></i>
-                                    Back to Dashboard
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
                                 </a>
                             </div>
                         }
@@ -176,17 +144,9 @@
                         {
                             <div class="mt-4 d-flex gap-2 justify-content-center">
                                 <a href="/Patient/Profile/@ViewBag.Patient?.PatientId" class="btn btn-secondary">
-                                    <i class="fas fa-arrow-left me-2"></i>
-                                    Back to Dashboard
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
                                 </a>
-                                <button class="btn btn-success" onclick="window.print()">
-                                    <i class="fas fa-print me-2"></i>
-                                    Print History
-                                </button>
-                                <button class="btn btn-info" onclick="exportToCSV()">
-                                    <i class="fas fa-file-csv me-2"></i>
-                                    Export to CSV
-                                </button>
+                             
                             </div>
                         }
                     </div>
@@ -195,94 +155,5 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // Helper functions for styling
-        function getPaymentStatusClass(status) {
-            switch(status.toLowerCase()) {
-                case 'completed': return 'bg-success';
-                case 'pending': return 'bg-warning';
-                case 'failed': return 'bg-danger';
-                case 'refunded': return 'bg-info';
-                default: return 'bg-secondary';
-            }
-        }
+  
 
-        function getPaymentStatusBorderClass(status) {
-            switch(status.toLowerCase()) {
-                case 'completed': return 'border-success';
-                case 'pending': return 'border-warning';
-                case 'failed': return 'border-danger';
-                case 'refunded': return 'border-info';
-                default: return 'border-secondary';
-            }
-        }
-
-        // Action functions
-        function viewPaymentDetails(paymentId) {
-            alert('Viewing details for Payment ID: ' + paymentId);
-            // TODO: Implement payment details modal or page
-        }
-
-        function downloadReceipt(paymentId) {
-            alert('Downloading receipt for Payment ID: ' + paymentId);
-            // TODO: Implement receipt download
-        }
-
-        function exportToCSV() {
-            alert('Exporting payment history to CSV');
-            // TODO: Implement CSV export
-        }
-
-        // Print-specific styles
-        window.addEventListener('beforeprint', function() {
-            document.body.classList.add('printing');
-        });
-
-        window.addEventListener('afterprint', function() {
-            document.body.classList.remove('printing');
-        });
-    </script>
-
-    <style media="print">
-        .btn, .pagination, .card-footer {
-            display: none !important;
-        }
-
-        .card {
-            border: 1px solid #000 !important;
-            page-break-inside: avoid;
-        }
-
-        .payment-card {
-            margin-bottom: 20px !important;
-        }
-    </style>
-</body>
-</html>
-
-@functions {
-    public string GetPaymentStatusClass(string status)
-    {
-        return status?.ToLower() switch
-        {
-            "completed" => "bg-success",
-            "pending" => "bg-warning",
-            "failed" => "bg-danger",
-            "refunded" => "bg-info",
-            _ => "bg-secondary"
-        };
-    }
-
-    public string GetPaymentStatusBorderClass(string status)
-    {
-        return status?.ToLower() switch
-        {
-            "completed" => "border-success",
-            "pending" => "border-warning",
-            "failed" => "border-danger",
-            "refunded" => "border-info",
-            _ => "border-secondary"
-        };
-    }
-}

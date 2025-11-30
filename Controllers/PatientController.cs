@@ -111,22 +111,41 @@ namespace WebApplication1.Controllers
         [Route("Patient/Payment/{id:int}")]
         public IActionResult Payment(int id)
         {
-            var patient = db.Patients.Find(id);
-            if (patient == null)
+            try
             {
-                return RedirectToAction("Login");
+                // Get patient with appointments, payments, and related data
+                var patient = db.Patients
+                    .Include(p => p.Appointments)
+                        .ThenInclude(a => a.Payment)
+                    .Include(p => p.Appointments)
+                        .ThenInclude(a => a.Doctor)
+                    .Include(p => p.Appointments)
+                        .ThenInclude(a => a.Clinic)
+                    .FirstOrDefault(p => p.PatientId == id);
+
+                if (patient == null)
+                {
+                    return RedirectToAction("Login");
+                }
+
+                // Get payments from patient's appointments with all related data
+                var payments = patient.Appointments
+                    .Where(a => a.Payment != null)
+                    .Select(a => a.Payment)
+                    .OrderByDescending(p => p.PaidAt ?? DateTime.MinValue)
+                    .ThenByDescending(p => p.PaymentId)
+                    .ToList();
+
+                //// Calculate summary statistics and pass via ViewBag
+                ViewBag.Patient = patient;
+                return View(payments);
             }
-
-            // Get patient's payments
-            var payments = db.Payments
-                .Join(db.Appointments, p => p.AppointmentId, a => a.AppointmentId, (p, a) => new { Payment = p, Appointment = a })
-                .Where(pa => pa.Appointment.PatientId == id)
-                .Select(pa => pa.Payment)
-                .OrderByDescending(p => p.PaidAt)
-                .ToList();
-
-            ViewBag.Patient = patient;
-            return View(payments);
+            catch (Exception ex)
+            {
+                // Log the exception for debugging
+                ViewBag.Error = $"An error occurred while loading payment data: {ex.Message}";
+                return RedirectToAction("Profile", new { id = id });
+            }
         }
 
         [Route("Patient/AppointmentHistory/{id:int}")]
@@ -138,15 +157,161 @@ namespace WebApplication1.Controllers
                 return RedirectToAction("Login");
             }
 
-            // Get patient's past appointments
+            // Get patient's past appointments with related data
             var appointmentHistory = db.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.Clinic)
+                .Include(a => a.Payment)
                 .Where(a => a.PatientId == id)
                 .Where(a => a.AppointmentDate < DateTime.Now)
                 .OrderByDescending(a => a.AppointmentDate)
+                .ThenByDescending(a => a.AppointmentTime)
                 .ToList();
 
             ViewBag.Patient = patient;
+            ViewBag.TotalAppointments = appointmentHistory.Count;
+            ViewBag.CompletedAppointments = appointmentHistory.Count(a => a.Status == AppointmentStatus.Completed);
+            ViewBag.CancelledAppointments = appointmentHistory.Count(a => a.Status == AppointmentStatus.Cancelled);
+
             return View(appointmentHistory);
+        }
+
+        [Route("Patient/BookAppointment/{id:int}")]
+        public IActionResult BookAppointment(int id)
+        {
+            var patient = db.Patients.Find(id);
+            if (patient == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            // Load available doctors with their clinics
+            var doctors = db.Doctors
+                .Include(d => d.Clinic)
+               .Include(d => d.Schedule)
+                .Where(d => d.IsConfirmed == ConfirmationStatus.Confirmed)
+                .OrderBy(d => d.Specialization)
+                .ThenBy(d => d.FirstName)
+                .ToList();
+
+            // Load all clinics for location selection
+            var clinics = db.Clinics
+                .OrderBy(c => c.City)
+                .ThenBy(c => c.ClinicName)
+                .ToList();
+
+            ViewBag.Patient = patient;
+            ViewBag.Doctors = doctors;
+            ViewBag.Clinics = clinics;
+            ViewBag.AppointmentTypes = Enum.GetValues(typeof(AppointmentType)).Cast<AppointmentType>().ToList();
+            ViewBag.MinDate = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd"); // Tomorrow
+            ViewBag.MaxDate = DateTime.Today.AddMonths(3).ToString("yyyy-MM-dd"); // 3 months ahead
+
+            return View(new Appointment { PatientId = id });
+        }
+
+        [HttpPost]
+        [Route("Patient/BookAppointment/{id:int}")]
+        public IActionResult BookAppointment(int id, Appointment appointment, string selectedTimeSlot)
+        {
+            try
+            {
+                var patient = db.Patients.Find(id);
+                if (patient == null)
+                {
+                    return RedirectToAction("Login");
+                }
+
+                // Validate appointment data
+                if (!ModelState.IsValid)
+                {
+                    // Reload data for the form
+                    ReloadBookAppointmentData(id);
+                    return View(appointment);
+                }
+
+                // Parse the selected time slot
+                if (TimeSpan.TryParse(selectedTimeSlot, out TimeSpan appointmentTime))
+                {
+                    appointment.AppointmentTime = appointmentTime;
+                }
+                else
+                {
+                    ModelState.AddModelError("", "Please select a valid time slot.");
+                    ReloadBookAppointmentData(id);
+                    return View(appointment);
+                }
+
+                // Check if the time slot is available
+                var existingAppointment = db.Appointments
+                    .FirstOrDefault(a => a.DoctorId == appointment.DoctorId &&
+                                       a.AppointmentDate.Date == appointment.AppointmentDate.Date &&
+                                       a.AppointmentTime == appointment.AppointmentTime &&
+                                       a.Status != AppointmentStatus.Cancelled);
+
+                if (existingAppointment != null)
+                {
+                    ModelState.AddModelError("", "This time slot is already booked. Please select another time.");
+                    ReloadBookAppointmentData(id);
+                    return View(appointment);
+                }
+
+                // Set appointment details
+                appointment.PatientId = id;
+                appointment.Status = AppointmentStatus.Pending;
+
+                // Set clinic based on appointment type
+                if (appointment.Type == AppointmentType.InPerson && appointment.DoctorId.HasValue)
+                {
+                    var doctor = db.Doctors.Include(d => d.Clinic).FirstOrDefault(d => d.DoctorId == appointment.DoctorId);
+                    appointment.ClinicId = doctor?.ClinicId;
+                    appointment.Fee = doctor?.ConsultationFee ?? 0;
+                }
+                else if (appointment.Type == AppointmentType.Video)
+                {
+                    appointment.ClinicId = null; // No clinic for video calls
+                    var doctor = db.Doctors.FirstOrDefault(d => d.DoctorId == appointment.DoctorId);
+                    appointment.Fee = doctor?.OnlineFee ?? 0;
+                }
+
+                // Generate a unique session ID for video calls
+                if (appointment.Type == AppointmentType.Video)
+                {
+                    appointment.SessionId = new Random().Next(100000, 999999);
+                }
+
+                db.Appointments.Add(appointment);
+                db.SaveChanges();
+
+                ViewBag.Success = "Appointment booked successfully!";
+                return RedirectToAction("UpcomingAppointments", new { id = id });
+            }
+            catch (Exception ex)
+            {
+                ViewBag.Error = $"Failed to book appointment: {ex.Message}";
+                ReloadBookAppointmentData(id);
+                return View(appointment);
+            }
+        }
+
+        private void ReloadBookAppointmentData(int patientId)
+        {
+            var patient = db.Patients.Find(patientId);
+            var doctors = db.Doctors
+                .Include(d => d.Clinic)
+                .Include(d => d.Schedule)
+                .Where(d => d.IsConfirmed == ConfirmationStatus.Confirmed)
+                .OrderBy(d => d.Specialization)
+                .ThenBy(d => d.FirstName)
+                .ToList();
+            var clinics = db.Clinics.OrderBy(c => c.City).ThenBy(c => c.ClinicName).ToList();
+
+            ViewBag.Patient = patient;
+            ViewBag.Doctors = doctors;
+            ViewBag.Clinics = clinics;
+            ViewBag.AppointmentTypes = Enum.GetValues(typeof(AppointmentType)).Cast<AppointmentType>().ToList();
+            ViewBag.MinDate = DateTime.Today.AddDays(1).ToString("yyyy-MM-dd");
+            ViewBag.MaxDate = DateTime.Today.AddMonths(3).ToString("yyyy-MM-dd");
         }
 
         // NEW: Upcoming Appointments Action
