@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
 
 namespace WebApplication1.Controllers
@@ -152,16 +153,81 @@ namespace WebApplication1.Controllers
         [Route("Patient/UpcomingAppointments/{id:int}")]
         public IActionResult UpcomingAppointments(int id)
         {
-            return View();
+            var patient = db.Patients.Find(id);
+            if (patient == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var now = DateTime.Now;
+            var today = DateTime.Today;
+
+            // Find patient's upcoming appointments
+            var upcomingAppointments = db.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.Clinic)
+                .Where(a => a.PatientId == id)
+                .Where(a => a.AppointmentDate > now || (a.AppointmentDate.Date == today && a.AppointmentDate.TimeOfDay >= now.TimeOfDay))
+                .OrderBy(a => a.AppointmentDate)
+                .ThenBy(a => a.AppointmentTime)
+                .ToList();
+            ViewBag.Patient = patient;
+            return View(upcomingAppointments);
         }
 
         // NEW: Profile Info Action
         [Route("Patient/ProfileInfo/{id:int}")]
         public IActionResult ProfileInfo(int id)
         {
-           
+            var patient = db.Patients.Find(id);
+            if (patient == null)
+            {
+                return RedirectToAction("Login");
+            }
 
-            return View();
+            var now = DateTime.Now;
+            var today = DateTime.Today;
+
+            var upcomingCount = db.Appointments
+               .Where(a => a.PatientId == id)
+               .Where(a => a.AppointmentDate > today || (a.AppointmentDate == today && a.AppointmentTime >= now.TimeOfDay))
+               .Count();
+
+            var pastCount = db.Appointments
+                .Where(a => a.PatientId == id)
+                .Where(a => a.AppointmentDate < today || (a.AppointmentDate == today && a.AppointmentTime < now.TimeOfDay))
+                .Count();
+
+            var nextAppointment = db.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.Clinic)
+                .Where(a => a.PatientId == id)
+                .Where(a => a.AppointmentDate > today || (a.AppointmentDate == today && a.AppointmentTime >= now.TimeOfDay))
+                .OrderBy(a => a.AppointmentDate)
+                .ThenBy(a => a.AppointmentTime)
+                .FirstOrDefault();
+
+            var paymentsQuery = db.Payments
+             .Join(db.Appointments, p => p.AppointmentId, a => a.AppointmentId, (p, a) => new { Payment = p, Appointment = a })
+             .Where(pa => pa.Appointment.PatientId == id)
+             .Select(pa => pa.Payment);
+
+            var lastPayment = paymentsQuery
+                .OrderByDescending(p => p.PaidAt)
+                .FirstOrDefault();
+
+            var totalPaid = paymentsQuery
+                .Where(p => p.PaidAt != null)
+                .Select(p => (decimal?)p.Amount)
+                .Sum() ?? 0m;
+
+            ViewBag.UpcomingCount = upcomingCount;
+            ViewBag.PastCount = pastCount;
+            ViewBag.NextAppointment = nextAppointment;
+            ViewBag.LastPayment = lastPayment;
+            ViewBag.TotalPaid = totalPaid;
+
+            return View(patient);
         }
     }
 }
