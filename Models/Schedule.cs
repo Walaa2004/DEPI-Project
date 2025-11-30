@@ -11,7 +11,7 @@ namespace WebApplication1.Models
         public int MaxPatientPerDay { get; set; }
 
 
-    public TimeSpan Starttime { get; set; }
+        public TimeSpan Starttime { get; set; }
 
         public TimeSpan Endtime { get; set; }
 

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 
 namespace WebApplication1.Models
@@ -27,6 +28,7 @@ namespace WebApplication1.Models
         public string? PerceptionNotes { get; set; }
 
         [Required]
+        [Column(TypeName = "decimal(18,2)")]
         public decimal Fee { get; set; }
 
 
@@ -38,7 +40,8 @@ namespace WebApplication1.Models
         public Doctor Doctor { get; set; }
         public int? ClinicId { get; set; }
         public Clinic Clinic { get; set; }
-      
+        public Payment? Payment { get; set; }
+
         public int SessionId { get; set; }
         public VideoCallSession? VideoCallSession { get; set; }
 

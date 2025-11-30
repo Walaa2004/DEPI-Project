@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace WebApplication1.Models
 {
@@ -25,7 +26,11 @@ namespace WebApplication1.Models
         [Required]
         public string Gender { get; set; }
         public string? BloodGroup { get; set; }
+
+        [Column(TypeName = "decimal(6,2)")]
         public decimal? Height { get; set; }
+
+        [Column(TypeName = "decimal(6,2)")]
         public decimal? Weight { get; set; }
         public string Allergies { get; set; }
         public string Address { get; set; }

@@ -24,7 +24,11 @@ namespace WebApplication1.Models
         public string Specialization { get; set; }
         public string About { get; set; }
         public bool AvailableForVideo { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal ConsultationFee { get; set; }
+
+        [Column(TypeName = "decimal(18,2)")]
         public decimal OnlineFee { get; set; }
         public string Address { get; set; }
         public string Gender { get; set; }
@@ -37,7 +41,8 @@ namespace WebApplication1.Models
         public ICollection<Appointment> Appointments { get; set; }
         public int? ClinicId { get; set; }
         public Clinic Clinic { get; set; }
-       
+        public Schedule? Schedule { get; set; }
+
     }
 
     // **FIX: Move enum outside the Doctor **
