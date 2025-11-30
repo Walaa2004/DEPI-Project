@@ -1,1 +1,116 @@
-﻿<h1>Admin Dashboard</h1>
+﻿@{
+    ViewData["Title"] = "Admin Dashboard";
+}
+
+<!-- Font Awesome for Icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<div class="container-fluid py-4">
+    <h1 class="mb-4">
+        <i class="fas fa-chart-line"></i> Admin Dashboard
+    </h1>
+
+    <!-- Statistics Cards Row -->
+    <div class="row g-4 mb-4">
+        <!-- Total Patients Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #4e73df !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small mb-1">Total Patients</div>
+                            <h2 class="mb-0 fw-bold">@ViewBag.TotalPatients</h2>
+                        </div>
+                        <div class="text-primary" style="font-size: 2.5rem;">
+                            <i class="fas fa-users"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Doctors Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #1cc88a !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small mb-1">Total Doctors</div>
+                            <h2 class="mb-0 fw-bold">@ViewBag.TotalDoctors</h2>
+                        </div>
+                        <div class="text-success" style="font-size: 2.5rem;">
+                            <i class="fas fa-user-md"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Total Appointments Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #36b9cc !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small mb-1">Total Appointments</div>
+                            <h2 class="mb-0 fw-bold">@ViewBag.TotalAppointments</h2>
+                        </div>
+                        <div class="text-info" style="font-size: 2.5rem;">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Today's Appointments Card -->
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #f6c23e !important;">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <div class="text-muted small mb-1">Today's Appointments</div>
+                            <h2 class="mb-0 fw-bold">@ViewBag.TodayAppointments</h2>
+                        </div>
+                        <div class="text-warning" style="font-size: 2.5rem;">
+                            <i class="fas fa-calendar-day"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Week Appointments Row -->
+    <div class="row g-4">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-calendar-week"></i> This Week's Appointments
+                    </h5>
+                    <h3 class="text-primary fw-bold">@ViewBag.WeekAppointments</h3>
+                    <p class="text-muted mb-0">Total appointments scheduled for this week</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row g-4 mt-2">
+        <div class="col-md-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-3">
+                        <i class="fas fa-bolt"></i> Quick Actions
+                    </h5>
+                    <div class="d-flex gap-3 flex-wrap">
+                        <a href="@Url.Action("Patients", "Admin")" class="btn btn-primary">
+                            <i class="fas fa-users"></i> Manage Patients
+                        </a>
+                        <a href="@Url.Action("Doctors", "Admin")" class="btn btn-success">
+                            <i class="fas fa-user-md"></i> Manage Doctors
+                        </a>
+                        <a href="@Url.Action("Appointments", "Admin")" class="btn btn-info">
+                            <i class="fas fa-calendar-alt"></i> Manage Appointments
+                        </a>

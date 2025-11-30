@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using WebApplication1.Models;
 
@@ -11,13 +12,15 @@ using WebApplication1.Models;
 namespace WebApplication1.Migrations
 {
     [DbContext(typeof(DBContext))]
-    partial class DBContextModelSnapshot : ModelSnapshot
+    [Migration("20251130125306_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.22")
+                .HasAnnotation("ProductVersion", "9.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -235,7 +238,8 @@ namespace WebApplication1.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("Height")
-                        .HasColumnType("decimal(6,2)");
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
 
                     b.Property<string>("LastName")
                         .IsRequired()
@@ -250,7 +254,8 @@ namespace WebApplication1.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<decimal?>("Weight")
-                        .HasColumnType("decimal(6,2)");
+                        .HasPrecision(5, 2)
+                        .HasColumnType("decimal(5,2)");
 
                     b.HasKey("PatientId");
 
@@ -453,7 +458,9 @@ namespace WebApplication1.Migrations
                     b.Navigation("Appointments");
                 });
 
-                    b.Navigation("Schedule");
+            modelBuilder.Entity("WebApplication1.Models.Patient", b =>
+                {
+                    b.Navigation("Appointments");
                 });
 #pragma warning restore 612, 618
         }
