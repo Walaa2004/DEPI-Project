@@ -1,5 +1,6 @@
 ﻿@model WebApplication1.Models.Doctor
 
+
 <div class="container py-5">
     <div class="row justify-content-center">
         <div class="col-lg-9 col-md-11">
@@ -9,61 +10,53 @@
                     <h3 class="mb-4 text-center">Doctor Registration</h3>
 
                     <form asp-controller="Doctor" asp-action="Register" method="post">
-                        @Html.AntiForgeryToken()
 
-                        <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
                         <div class="form-section-title text-primary border-bottom mb-3 pb-2">Personal Information</div>
                         <div class="row">
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">First Name <span class="text-danger">*</span></label>
+                                <label class="form-label">First Name</label>
                                 <input asp-for="FirstName" class="form-control" required>
-                                <span asp-validation-for="FirstName" class="text-danger"></span>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Last Name <span class="text-danger">*</span></label>
+                                <label class="form-label">Last Name</label>
                                 <input asp-for="LastName" class="form-control" required>
-                                <span asp-validation-for="LastName" class="text-danger"></span>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Email <span class="text-danger">*</span></label>
+                                <label class="form-label">Email</label>
                                 <input asp-for="Email" type="email" class="form-control" required>
-                                <span asp-validation-for="Email" class="text-danger"></span>
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Phone Number <span class="text-danger">*</span></label>
+                                <label class="form-label">Phone Number</label>
                                 <input asp-for="PhoneNumber" class="form-control" required>
-                                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
                             </div>
 
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">Age <span class="text-danger">*</span></label>
-                                <input asp-for="Age" type="number" min="25" max="80" class="form-control" required>
-                                <span asp-validation-for="Age" class="text-danger"></span>
+                                <label class="form-label">Age</label>
+                                <input asp-for="Age" type="number" min="25" class="form-control" required>
                             </div>
                         </div>
 
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label class="form-label">Gender</label>
-                                <select asp-for="Gender" class="form-select">
-                                    <option value="">Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
+                                <select asp-for="Gender" class="form-select" required>
+                                    <option disabled selected>Select</option>
+                                    <option>Male</option>
+                                    <option>Female</option>
+                                    <option>Other</option>
                                 </select>
-                                <span asp-validation-for="Gender" class="text-danger"></span>
                             </div>
 
                             <div class="col-md-6 mb-3">
-                                <label class="form-label">Password <span class="text-danger">*</span></label>
-                                <input asp-for="PasswordHashed" type="password" class="form-control" required minlength="6">
-                                <span asp-validation-for="PasswordHashed" class="text-danger"></span>
+                                <label class="form-label">Password</label>
+                                <input asp-for="PasswordHashed" type="password" class="form-control" required>
                             </div>
                         </div>
 
@@ -73,31 +66,24 @@
 
                         <div class="row">
                             <div class="col-md-4 mb-3">
-                                <label class="form-label">License Number <span class="text-danger">*</span></label>
-                                <input asp-for="LicenseNumber" class="form-control" required minlength="14"
-                                       placeholder="Minimum 14 characters">
-                                <span asp-validation-for="LicenseNumber" class="text-danger"></span>
-                                <small class="form-text text-muted">Must be at least 14 characters</small>
+                                <label class="form-label">License Number</label>
+                                <input asp-for="LicenseNumber" class="form-control" required>
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Experience (Years)</label>
-                                <input asp-for="ExperienceYears" type="number" min="0" max="50" class="form-control" value="0">
-                                <span asp-validation-for="ExperienceYears" class="text-danger"></span>
+                                <input asp-for="ExperienceYears" type="number" min="0" class="form-control">
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Specialization</label>
-                                <input asp-for="Specialization" class="form-control" placeholder="e.g., Cardiology, Pediatrics">
-                                <span asp-validation-for="Specialization" class="text-danger"></span>
+                                <input asp-for="Specialization" class="form-control">
                             </div>
                         </div>
 
                         <div class="mb-3">
                             <label class="form-label">About</label>
-                            <textarea asp-for="About" rows="3" class="form-control"
-                                      placeholder="Write a short professional bio..."></textarea>
-                            <span asp-validation-for="About" class="text-danger"></span>
+                            <textarea asp-for="About" rows="3" class="form-control" placeholder="Write a short professional bio..."></textarea>
                         </div>
 
                         <hr class="my-4">
@@ -108,34 +94,26 @@
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Available for Video Calls?</label>
                                 <select asp-for="AvailableForVideo" class="form-select">
-                                    <option value="false">No</option>
                                     <option value="true">Yes</option>
+                                    <option value="false">No</option>
                                 </select>
-                                <span asp-validation-for="AvailableForVideo" class="text-danger"></span>
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Consultation Fee (Clinic)</label>
-                                <input asp-for="ConsultationFee" type="number" step="0.01" min="0"
-                                       class="form-control" placeholder="0.00">
-                                <span asp-validation-for="ConsultationFee" class="text-danger"></span>
+                                <input asp-for="ConsultationFee" type="number" step="0.1" class="form-control">
                             </div>
 
                             <div class="col-md-4 mb-3">
                                 <label class="form-label">Online Fee</label>
-                                <input asp-for="OnlineFee" type="number" step="0.01" min="0"
-                                       class="form-control" placeholder="0.00">
-                                <span asp-validation-for="OnlineFee" class="text-danger"></span>
+                                <input asp-for="OnlineFee" type="number" step="0.1" class="form-control">
                             </div>
                         </div>
 
                         <div class="form-section-title text-primary border-bottom mb-3 pb-2">Clinic Address</div>
 
                         <div class="mb-3">
-                            <label class="form-label">Address</label>
-                            <textarea asp-for="Address" rows="2" class="form-control"
-                                      placeholder="Enter clinic address"></textarea>
-                            <span asp-validation-for="Address" class="text-danger"></span>
+                            <textarea asp-for="Address" rows="2" class="form-control"></textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary w-100 py-2">Register</button>
@@ -151,4 +129,3 @@
         </div>
     </div>
 </div>
-

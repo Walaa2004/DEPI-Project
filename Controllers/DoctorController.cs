@@ -27,14 +27,13 @@ namespace WebApplication1.Controllers
             // FIX: Removed "Schedule" validation because the property is gone
             ModelState.Remove("Appointments");
             ModelState.Remove("Clinic");
-            ModelState.Remove("Schedule");
 
             if (ModelState.IsValid)
             {
                 doctor.IsConfirmed = ConfirmationStatus.Pending;
                 _context.Add(doctor);
                 await _context.SaveChangesAsync();
-                return RedirectToAction("Login");
+                return RedirectToAction(nameof(Login));
             }
             return View(doctor);
         }

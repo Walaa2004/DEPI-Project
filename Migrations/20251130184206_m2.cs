@@ -6,11 +6,10 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace WebApplication1.Migrations
 {
     /// <inheritdoc />
-<<<<<<<< HEAD:Migrations/20251130184206_m2.cs
-    public partial class m2 : Migration
-========
-    public partial class InitialCreate : Migration
->>>>>>>> d10e5f5c7764afb3a9e0de4bc7a2ffb92af2e642:Migrations/20251130191957_InitialCreate.cs
+
+
+  public partial class InitialCreate : Migration
+
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)

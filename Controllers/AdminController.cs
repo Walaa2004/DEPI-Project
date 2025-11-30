@@ -26,7 +26,10 @@ namespace WebApplication1.Controllers
                 return View();
             }
         }
-
+        /// <summary>
+        /// /hi
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Dashboard()
         {
             ViewBag.TotalPatients = _context.Patients.Count();
