@@ -169,6 +169,67 @@ namespace WebApplication1.Controllers
         }
 
         // ==========================================
+        // 6. MANAGE APPOINTMENTS (List Created Slots)
+        // ==========================================
+        public async Task<IActionResult> ManageAppointments(int id)
+        {
+            // View all appointments created by this doctor (Booked and Empty)
+            var appointments = await _context.Appointments
+                .Include(a => a.Patient) // Include patient to see who booked
+                .Where(a => a.DoctorId == id)
+                .OrderBy(a => a.AppointmentDate)
+                .ThenBy(a => a.AppointmentTime)
+                .ToListAsync();
+
+            ViewBag.DoctorId = id;
+            return View(appointments);
+        }
+
+        // ==========================================
+        // 7. CREATE SLOT (GET)
+        // ==========================================
+        public IActionResult CreateSlot(int doctorId)
+        {
+            ViewBag.DoctorId = doctorId;
+            return View();
+        }
+
+        // ==========================================
+        // 8. CREATE SLOT (POST) - The Key Logic
+        // ==========================================
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateSlot(Appointment appointment)
+        {
+            // 1. Remove Patient Validation (Since we are creating an empty slot)
+            ModelState.Remove("Patient");
+            ModelState.Remove("PatientId");
+            ModelState.Remove("Clinic");
+            ModelState.Remove("Doctor");
+
+            if (ModelState.IsValid)
+            {
+                // 2. FORCE PatientId to be NULL (This makes it appear in the Patient's view)
+                appointment.PatientId = null;
+
+                // 3. Set Default Status to Pending
+                appointment.Status = AppointmentStatus.Pending;
+
+                // 4. Ensure Doctor ID is set
+                // (Assuming hidden field passes DoctorId, or get from User.Identity)
+
+                _context.Add(appointment);
+                await _context.SaveChangesAsync();
+
+                TempData["Success"] = "Appointment slot created successfully! Patients can now book this.";
+                return RedirectToAction(nameof(ManageAppointments), new { id = appointment.DoctorId });
+            }
+
+            ViewBag.DoctorId = appointment.DoctorId;
+            return View(appointment);
+        }
+
+        // ==========================================
         // HELPER: Simple SHA256 Password Hasher
         // ==========================================
         private string HashPassword(string password)

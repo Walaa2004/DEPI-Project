@@ -41,7 +41,9 @@
                     </div>
 
                     <hr />
-
+                    <a asp-action="ManageAppointments" asp-route-id="@Model.DoctorId" class="btn btn-info text-white w-100 mt-2">
+                        <i class="fas fa-calendar-alt me-2"></i> Manage Appointments
+                    </a>
                     <a asp-action="Edit" asp-route-id="@Model.DoctorId" class="btn btn-primary w-100">
                         <i class="fas fa-edit me-2"></i> Edit Profile
                     </a>
