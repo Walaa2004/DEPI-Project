@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace WebApplication1.Controllers
 {
     public class DoctorController : Controller
     {
-        // Connection to Database
         private readonly DBContext _context = new DBContext();
 
         // ==========================================
@@ -24,17 +25,25 @@ namespace WebApplication1.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Register(Doctor doctor)
         {
-            // FIX: Removed "Schedule" validation because the property is gone
+            // FIX 1: Ignore validation for properties not in the form
             ModelState.Remove("Appointments");
             ModelState.Remove("Clinic");
+            ModelState.Remove("Schedule"); // <--- This was missing!
 
             if (ModelState.IsValid)
             {
+                // FIX 2: Hash the password before saving
+                doctor.PasswordHashed = HashPassword(doctor.PasswordHashed);
+
+                // Set default status
                 doctor.IsConfirmed = ConfirmationStatus.Pending;
+
                 _context.Add(doctor);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Login));
             }
+
+            // If we get here, something failed.
             return View(doctor);
         }
 
@@ -47,21 +56,39 @@ namespace WebApplication1.Controllers
         }
 
         // ==========================================
-        // 2. LOGIN (POST)
+        // 2. LOGIN (POST) - Updated with Confirmation Check
         // ==========================================
         [HttpPost]
         public async Task<IActionResult> Login(string email, string password)
         {
-            // FIX: Removed .Include(d => d.Schedule) because the relationship was removed from the model
             var doctor = await _context.Doctors
                 .FirstOrDefaultAsync(d => d.Email == email);
 
-            if (doctor == null || doctor.PasswordHashed != password)
+            // Hash the input password to compare with the DB
+            string inputHash = HashPassword(password);
+
+            // 1. Check if User Exists and Password is Correct
+            if (doctor == null || doctor.PasswordHashed != inputHash)
             {
                 ViewBag.Error = "Invalid Username or Password.";
                 return View();
             }
 
+            // 2. CHECK STATUS: Block Login if Pending
+            if (doctor.IsConfirmed == ConfirmationStatus.Pending)
+            {
+                ViewBag.Error = "Access Denied: Your account is currently Pending approval from the Admin.";
+                return View();
+            }
+
+            // 3. CHECK STATUS: Block Login if Rejected (Optional but recommended)
+            if (doctor.IsConfirmed == ConfirmationStatus.Rejected)
+            {
+                ViewBag.Error = "Access Denied: Your registration was Rejected by the Admin.";
+                return View();
+            }
+
+            // 4. If Confirmed, Allow Login
             return RedirectToAction("Dashboard", new { id = doctor.DoctorId });
         }
 
@@ -76,20 +103,20 @@ namespace WebApplication1.Controllers
 
             if (doctor == null) return NotFound();
 
-            // FIX: Fetch the schedule manually and put it in ViewBag
+            // Fetch schedule manually
             ViewBag.CurrentSchedule = await _context.Schedules.FirstOrDefaultAsync(s => s.DoctorId == id);
 
             return View(doctor);
-        }        // ==========================================
+        }
+
+        // ==========================================
         // 4. EDIT PROFILE (GET)
         // ==========================================
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null) return NotFound();
-
             var doctor = await _context.Doctors.FindAsync(id);
             if (doctor == null) return NotFound();
-
             return View(doctor);
         }
 
@@ -102,31 +129,28 @@ namespace WebApplication1.Controllers
         {
             if (id != doctor.DoctorId) return NotFound();
 
-            // FIX: Removed "Schedule" validation
             ModelState.Remove("Appointments");
             ModelState.Remove("Clinic");
+            ModelState.Remove("Schedule"); // Ignore validation
 
             if (ModelState.IsValid)
             {
                 try
                 {
                     var existingDoctor = await _context.Doctors.FindAsync(id);
-
                     if (existingDoctor == null) return NotFound();
 
-                    // Update allowed fields
+                    // Update fields
                     existingDoctor.FirstName = doctor.FirstName;
                     existingDoctor.LastName = doctor.LastName;
                     existingDoctor.PhoneNumber = doctor.PhoneNumber;
                     existingDoctor.Age = doctor.Age;
                     existingDoctor.Gender = doctor.Gender;
-
                     existingDoctor.Specialization = doctor.Specialization;
                     existingDoctor.ExperienceYears = doctor.ExperienceYears;
                     existingDoctor.LicenseNumber = doctor.LicenseNumber;
                     existingDoctor.About = doctor.About;
                     existingDoctor.Address = doctor.Address;
-
                     existingDoctor.AvailableForVideo = doctor.AvailableForVideo;
                     existingDoctor.ConsultationFee = doctor.ConsultationFee;
                     existingDoctor.OnlineFee = doctor.OnlineFee;
@@ -139,10 +163,23 @@ namespace WebApplication1.Controllers
                     if (!_context.Doctors.Any(e => e.DoctorId == doctor.DoctorId)) return NotFound();
                     else throw;
                 }
-
                 return RedirectToAction("Dashboard", new { id = doctor.DoctorId });
             }
             return View(doctor);
+        }
+
+        // ==========================================
+        // HELPER: Simple SHA256 Password Hasher
+        // ==========================================
+        private string HashPassword(string password)
+        {
+            if (string.IsNullOrEmpty(password)) return "";
+
+            using (var sha256 = SHA256.Create())
+            {
+                var hashedBytes = sha256.ComputeHash(Encoding.UTF8.GetBytes(password));
+                return BitConverter.ToString(hashedBytes).Replace("-", "").ToLower();
+            }
         }
     }
 }
