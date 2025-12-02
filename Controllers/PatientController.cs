@@ -317,30 +317,54 @@ namespace WebApplication1.Controllers
 
 
 
-        // NEW: Upcoming Appointments Action
+        // GET: Upcoming Appointments
         [Route("Patient/UpcomingAppointments/{id:int}")]
         public IActionResult UpcomingAppointments(int id)
         {
             var patient = db.Patients.Find(id);
-            if (patient == null)
-            {
-                return RedirectToAction("Login");
-            }
+            if (patient == null) return RedirectToAction("Login");
 
             var now = DateTime.Now;
             var today = DateTime.Today;
 
-            // Find patient's upcoming appointments
             var upcomingAppointments = db.Appointments
                 .Include(a => a.Doctor)
                 .Include(a => a.Clinic)
                 .Where(a => a.PatientId == id)
-                .Where(a => a.AppointmentDate > now || (a.AppointmentDate.Date == today && a.AppointmentDate.TimeOfDay >= now.TimeOfDay))
+                // 1. Only show Future appointments
+                .Where(a => a.AppointmentDate > today || (a.AppointmentDate == today && a.AppointmentTime >= now.TimeOfDay))
+                // 2. Do NOT show cancelled appointments
+                .Where(a => a.Status != AppointmentStatus.Cancelled)
                 .OrderBy(a => a.AppointmentDate)
                 .ThenBy(a => a.AppointmentTime)
                 .ToList();
+
             ViewBag.Patient = patient;
             return View(upcomingAppointments);
+        }
+
+        // POST: Cancel Appointment
+        [HttpPost]
+        public IActionResult CancelAppointment(int id)
+        {
+            var appointment = db.Appointments.Find(id);
+
+            if (appointment != null)
+            {
+                // 1. Change status to Cancelled (Enum value 4)
+                appointment.Status = AppointmentStatus.Cancelled;
+
+                // 2. Save changes to DB
+                db.SaveChanges();
+
+                // 3. Set a temporary success message
+                TempData["Success"] = "Your appointment has been successfully cancelled.";
+
+                // 4. Redirect back to the list (the cancelled item will now be hidden due to the filter above)
+                return RedirectToAction("UpcomingAppointments", new { id = appointment.PatientId });
+            }
+
+            return RedirectToAction("Login");
         }
 
         // NEW: Profile Info Action
