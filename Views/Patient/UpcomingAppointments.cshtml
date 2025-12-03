@@ -5,25 +5,36 @@
 }
 
 <div class="container mt-5">
-    <div class="d-flex justify-content-between align-items-center mb-5">
-        <div>
-            <h2 class="fw-bold text-primary">Your Schedule</h2>
-            <p class="text-muted">Manage your upcoming visits and video consultations.</p>
-        </div>
-        <a href="@Url.Action("ProfileInfo", new { id = ViewBag.Patient.PatientId })" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Back to Dashboard
+    <div class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-3">
+        <h2 class="fw-bold text-primary">
+            <i class="bi bi-calendar-event me-2"></i>Upcoming Appointments
+        </h2>
+
+        <a href="@Url.Action("Profile", "Patient", new { id = ViewBag.Patient.PatientId })" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Back to Profile
         </a>
     </div>
 
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+            <i class="bi bi-check-circle-fill me-2"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
     @if (!Model.Any())
     {
-        <div class="text-center py-5">
+        <div class="text-center py-5 bg-light rounded-3 shadow-sm">
             <div class="mb-3">
-                <i class="bi bi-calendar-check text-muted" style="font-size: 4rem;"></i>
+                <i class="bi bi-calendar-x text-muted" style="font-size: 4rem;"></i>
             </div>
-            <h4 class="text-muted">No upcoming appointments.</h4>
-            <p class="mb-4">You are all caught up!</p>
-            <button class="btn btn-primary px-4 py-2">Book New Appointment</button>
+            <h4 class="text-muted">No upcoming appointments found.</h4>
+            <p class="mb-4">You have no scheduled visits at the moment.</p>
+
+            <a href="@Url.Action("AvailableAppointments", "Patient", new { id = ViewBag.Patient.PatientId })" class="btn btn-primary px-4 py-2">
+                <i class="bi bi-search me-2"></i>Browse Available Appointments
+            </a>
         </div>
     }
     else
@@ -31,86 +42,74 @@
         <div class="row g-4">
             @foreach (var item in Model)
             {
-                // C# Logic to determine styles dynamically
                 bool isVideo = item.Type.ToString() == "Video";
-                string iconClass = isVideo ? "bi-camera-video-fill" : "bi-hospital-fill";
-                string badgeClass = isVideo ? "bg-info text-dark" : "bg-primary";
-                string cardBorderClass = isVideo ? "border-info" : "border-primary";
+                string cardClass = isVideo ? "border-info" : "border-primary";
+                string iconClass = isVideo ? "bi-camera-video" : "bi-hospital";
 
                 <div class="col-md-6 col-lg-4">
-                    <div class="card h-100 shadow-sm border-0 border-top border-4 @cardBorderClass">
+                    <div class="card h-100 shadow-sm border-0 border-top border-4 @cardClass">
                         <div class="card-body">
-                            <div class="d-flex justify-content-between mb-3">
-                                <span class="badge @badgeClass rounded-pill d-flex align-items-center gap-1">
-                                    <i class="bi @iconClass"></i> @item.Type
-                                </span>
-                                <span class="badge bg-light text-dark border">@item.Status</span>
-                            </div>
 
-                            <h4 class="fw-bold mb-0">@item.AppointmentDate.ToString("dddd")</h4>
-                            <p class="text-primary fs-5 mb-3">
-                                @item.AppointmentDate.ToString("MMM dd")
-                                <span class="text-muted">at</span>
-                                @DateTime.Today.Add(item.AppointmentTime).ToString("hh:mm tt")
-                            </p>
+                            <div class="d-flex justify-content-between align-items-start mb-3">
+                                <div>
+                                    <h4 class="fw-bold text-dark mb-0">@item.AppointmentDate.ToString("dddd")</h4>
+                                    <div class="text-primary fw-bold">
+                                        @item.AppointmentDate.ToString("MMM dd, yyyy")
+                                    </div>
+                                </div>
+                                <div class="badge bg-light text-dark border p-2 fs-6">
+                                    <i class="bi bi-clock"></i> @DateTime.Today.Add(item.AppointmentTime).ToString("hh:mm tt")
+                                </div>
+                            </div>
 
                             <hr class="text-muted opacity-25">
 
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-light rounded-circle p-2 me-3">
-                                    <i class="bi bi-person-fill fs-4 text-secondary"></i>
-                                </div>
-                                <div>
-                                    <small class="text-muted d-block">Doctor</small>
-                                    <strong>Dr. @item.Doctor?.FirstName @item.Doctor?.LastName</strong>
-                                </div>
-                            </div>
-
-                            <div class="d-flex align-items-center mb-3">
-                                <div class="bg-light rounded-circle p-2 me-3">
-                                    <i class="bi bi-geo-alt-fill fs-4 text-secondary"></i>
-                                </div>
-                                <div>
-                                    <small class="text-muted d-block">Location</small>
-                                    @if (isVideo)
-                                    {
-                                        <strong>Online Meeting</strong>
-                                    }
-                                    else
-                                    {
-                                        <strong>@item.Clinic?.ClinicName</strong>
-                                        <br />
-                                        <small class="text-muted">@item.Clinic?.City</small>
-                                    }
+                            <div class="mb-3">
+                                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Doctor</small>
+                                <div class="d-flex align-items-center mt-1">
+                                    <div class="bg-light rounded-circle p-2 me-2">
+                                        <i class="bi bi-person-fill fs-5 text-secondary"></i>
+                                    </div>
+                                    <span class="fs-5 fw-bold">Dr. @item.Doctor?.FirstName @item.Doctor?.LastName</span>
                                 </div>
                             </div>
 
-                            @if (isVideo)
-                            {
-                                <div class="alert alert-light border small text-center">
-                                    <i class="bi bi-info-circle"></i> Link activates 10 mins before.
+                            <div class="mb-3">
+                                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Location Details</small>
+                                <div class="d-flex mt-1">
+                                    <div class="bg-light rounded-circle p-2 me-2 align-self-start">
+                                        <i class="bi @iconClass fs-5 text-secondary"></i>
+                                    </div>
+                                    <div>
+                                        @if (isVideo)
+                                        {
+                                            <strong class="d-block text-info">Online Video Call</strong>
+                                            <small class="text-muted">Link provided before session</small>
+                                        }
+                                        else
+                                        {
+                                            <strong class="d-block text-dark">@item.Clinic?.ClinicName</strong>
+                                            <small class="text-muted d-block"><i class="bi bi-geo-alt me-1"></i>@item.Clinic?.Address</small>
+                                            <small class="text-muted">@item.Clinic?.City</small>
+                                        }
+                                    </div>
                                 </div>
-                            }
-                            else
-                            {
-                                <div class="d-grid mb-3">
-                                    <button class="btn btn-outline-primary btn-sm">
-                                        <i class="bi bi-map"></i> Get Directions
-                                    </button>
-                                </div>
-                            }
+                            </div>
+
+                            <div class="mb-3">
+                                <small class="text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Status</small><br />
+                                <span class="badge bg-success mt-1">@item.Status</span>
+                            </div>
+
                         </div>
 
-                        <div class="card-footer bg-white border-top-0 pb-3 px-3">
-                            <div class="d-grid gap-2">
-                                @if (isVideo && item.Status.ToString() == "Confirmed")
-                                {
-                                    <button class="btn btn-success">
-                                        <i class="bi bi-camera-video"></i> Join Call
-                                    </button>
-                                }
-                                <button class="btn btn-outline-danger btn-sm">Cancel Appointment</button>
-                            </div>
+                        <div class="card-footer bg-white border-top-0 pb-3">
+                            <form asp-action="CancelAppointment" asp-controller="Patient" asp-route-id="@item.AppointmentId" method="post" class="d-grid">
+                                <button type="submit" class="btn btn-outline-danger"
+                                        onclick="return confirm('Are you sure you want to cancel this appointment with Dr. @item.Doctor?.FirstName?');">
+                                    <i class="bi bi-x-circle me-1"></i>Cancel Appointment
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
