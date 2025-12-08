@@ -1,0 +1,319 @@
+﻿@model IEnumerable<WebApplication1.Models.Payment>
+
+@{
+    ViewData["Title"] = "Payment Management";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="card-title">Payment Management</h3>
+                    <div class="card-tools">
+                        <span class="badge badge-info">@ViewBag.CurrentFilter Payments</span>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <!-- Summary Statistics -->
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <div class="info-box bg-info">
+                                <span class="info-box-icon"><i class="fas fa-money-bill"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Total Payments</span>
+                                    <span class="info-box-number">@ViewBag.TotalPayments</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box bg-warning">
+                                <span class="info-box-icon"><i class="fas fa-clock"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Pending</span>
+                                    <span class="info-box-number">@ViewBag.PendingCount</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box bg-success">
+                                <span class="info-box-icon"><i class="fas fa-check"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Completed</span>
+                                    <span class="info-box-number">@ViewBag.CompletedCount</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="info-box bg-danger">
+                                <span class="info-box-icon"><i class="fas fa-times"></i></span>
+                                <div class="info-box-content">
+                                    <span class="info-box-text">Failed</span>
+                                    <span class="info-box-number">@ViewBag.FailedCount</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Filter Buttons -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="btn-group" role="group">
+                                <a href="@Url.Action("Payments", new { status = "all" })" 
+                                   class="btn btn-outline-primary @(ViewBag.CurrentFilter == "All" ? "active" : "")">
+                                    All Payments
+                                </a>
+                                <a href="@Url.Action("Payments", new { status = "pending" })" 
+                                   class="btn btn-outline-warning @(ViewBag.CurrentFilter == "Pending" ? "active" : "")">
+                                    Pending (@ViewBag.PendingCount)
+                                </a>
+                                <a href="@Url.Action("Payments", new { status = "completed" })" 
+                                   class="btn btn-outline-success @(ViewBag.CurrentFilter == "Completed" ? "active" : "")">
+                                    Completed (@ViewBag.CompletedCount)
+                                </a>
+                                <a href="@Url.Action("Payments", new { status = "failed" })" 
+                                   class="btn btn-outline-danger @(ViewBag.CurrentFilter == "Failed" ? "active" : "")">
+                                    Failed (@ViewBag.FailedCount)
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bulk Actions Form -->
+                    @if (ViewBag.CurrentFilter == "Pending")
+                    {
+                        <form id="bulkApproveForm" method="post" asp-action="BulkApprovePayments">
+                            <div class="row mb-3">
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-success" id="bulkApproveBtn" disabled>
+                                        <i class="fas fa-check-double"></i> Bulk Approve Selected
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" id="selectAllBtn">
+                                        <i class="fas fa-check-square"></i> Select All
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Payments Table -->
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th width="50">
+                                                <input type="checkbox" id="selectAll">
+                                            </th>
+                                            <th>Payment ID</th>
+                                            <th>Patient</th>
+                                            <th>Doctor</th>
+                                            <th>Amount</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var payment in Model)
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <input type="checkbox" name="paymentIds" value="@payment.PaymentId" class="payment-checkbox">
+                                                </td>
+                                                <td>
+                                                    <strong>#@payment.PaymentId</strong>
+                                                </td>
+                                                <td>
+                                                    @if (payment.Appointment?.Patient != null)
+                                                    {
+                                                        <span>@payment.Appointment.Patient.FirstName @payment.Appointment.Patient.LastName</span>
+                                            
+                                                        <br>
+                                                        <small class="text-muted">@payment.Appointment.Patient.Email</small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">No patient data</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (payment.Appointment?.Doctor != null)
+                                                    {
+                                                        <span>Dr. @payment.Appointment.Doctor.FirstName @payment.Appointment.Doctor.LastName</span>
+                                            
+                                                        <br>
+                                                        <small class="text-muted">@payment.Appointment.Doctor.Specialization</small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">No doctor data</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <strong>@payment.Amount.ToString("C") @payment.Currency</strong>
+                                                </td>
+                                                <td>
+                                                    @switch (payment.PaymentStatus)
+                                                    {
+                                                        case PaymentStatus.Pending:
+                                                            <span class="badge badge-warning">Pending</span>
+                                                            break;
+                                                        case PaymentStatus.Completed:
+                                                            <span class="badge badge-success">Completed</span>
+                                                            break;
+                                                        case PaymentStatus.Failed:
+                                                            <span class="badge badge-danger">Failed</span>
+                                                            break;
+                                                        default:
+                                                            <span class="badge badge-secondary">Unknown</span>
+                                                            break;
+                                                    }
+                                                </td>
+                                                <td>
+                                                    @if (payment.PaidAt.HasValue)
+                                                    {
+                                                        <span>@payment.PaidAt.Value.ToString("MMM dd, yyyy")</span>
+                                            
+                                                        <br>
+                                                        <small class="text-muted">@payment.PaidAt.Value.ToString("hh:mm tt")</small>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="text-muted">Not paid</span>
+                                                    }
+                                                </td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <a href="@Url.Action("PaymentDetails", new { id = payment.PaymentId })"
+                                                           class="btn btn-sm btn-info">
+                                                            <i class="fas fa-eye"></i> View
+                                                        </a>
+                                                        @if (payment.PaymentStatus == PaymentStatus.Pending)
+                                                        {
+                                                            <form method="post" asp-action="ApprovePayment" style="display: inline;">
+                                                                <input type="hidden" name="id" value="@payment.PaymentId">
+                                                                <button type="submit" class="btn btn-sm btn-success"
+                                                                        onclick="return confirm('Are you sure you want to approve this payment?')">
+                                                                    <i class="fas fa-check"></i> Approve
+                                                                </button>
+                                                            </form>
+                                                        }
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <!-- Payments Table for non-Pending views -->
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Payment ID</th>
+                                        <th>Patient</th>
+                                        <th>Doctor</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var payment in Model)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong>#@payment.PaymentId</strong>
+                                            </td>
+                                            <td>
+                                                @if (payment.Appointment?.Patient != null)
+                                                {
+                                                    <span>@payment.Appointment.Patient.FirstName @payment.Appointment.Patient.LastName</span>
+                                        
+                                                    <br>
+                                                    <small class="text-muted">@payment.Appointment.Patient.Email</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">No patient data</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (payment.Appointment?.Doctor != null)
+                                                {
+                                                    <span>Dr. @payment.Appointment.Doctor.FirstName @payment.Appointment.Doctor.LastName</span>
+                                        
+                                                    <br>
+                                                    <small class="text-muted">@payment.Appointment.Doctor.Specialization</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">No doctor data</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <strong>@payment.Amount.ToString("C") @payment.Currency</strong>
+                                            </td>
+                                            <td>
+                                                @switch (payment.PaymentStatus)
+                                                {
+                                                    case PaymentStatus.Pending:
+                                                        <span class="badge badge-warning">Pending</span>
+                                                        break;
+                                                    case PaymentStatus.Completed:
+                                                        <span class="badge badge-success">Completed</span>
+                                                        break;
+                                                    case PaymentStatus.Failed:
+                                                        <span class="badge badge-danger">Failed</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge badge-secondary">Unknown</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @if (payment.PaidAt.HasValue)
+                                                {
+                                                    <span>@payment.PaidAt.Value.ToString("MMM dd, yyyy")</span>
+                                        
+                                                    <br>
+                                                    <small class="text-muted">@payment.PaidAt.Value.ToString("hh:mm tt")</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Not paid</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a href="@Url.Action("PaymentDetails", new { id = payment.PaymentId })"
+                                                       class="btn btn-sm btn-info">
+                                                        <i class="fas fa-eye"></i> View
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    @if (!Model.Any())
+                    {
+                        <div class="text-center py-4">
+                            <p class="text-muted">No payments found for the selected filter.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+}

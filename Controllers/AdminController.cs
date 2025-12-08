@@ -33,6 +33,9 @@ namespace WebApplication1.Controllers
             ViewBag.TotalPatients = _context.Patients.Count();
             ViewBag.TotalDoctors = _context.Doctors.Count();
             ViewBag.TotalAppointments = _context.Appointments.Count();
+            ViewBag.TotalRevenue = _context.Payments
+                .Where(p => p.PaymentStatus == PaymentStatus.Completed)
+                .Sum(p => p.Amount);
 
             var today = DateTime.Today;
             ViewBag.TodayAppointments = _context.Appointments
@@ -89,6 +92,7 @@ namespace WebApplication1.Controllers
 
             return RedirectToAction("Patients");
         }
+
         public IActionResult Doctors()
         {
             var doctors = _context.Doctors
@@ -97,6 +101,7 @@ namespace WebApplication1.Controllers
 
             return View(doctors);
         }
+
         public IActionResult DoctorDetails(int id)
         {
             var doctor = _context.Doctors.Find(id);
@@ -167,6 +172,7 @@ namespace WebApplication1.Controllers
 
             return RedirectToAction("Doctors");
         }
+
         public IActionResult Appointments()
         {
             var appointments = _context.Appointments
@@ -177,6 +183,7 @@ namespace WebApplication1.Controllers
 
             return View(appointments);
         }
+
         public IActionResult AppointmentDetails(int id)
         {
             var appointment = _context.Appointments
@@ -224,5 +231,161 @@ namespace WebApplication1.Controllers
 
             return RedirectToAction("Appointments");
         }
+
+        public IActionResult Payments(string status = "all")
+        {
+            var paymentsQuery = _context.Payments
+                .Include(p => p.Appointment)
+                    .ThenInclude(a => a.Patient)
+                .Include(p => p.Appointment)
+                    .ThenInclude(a => a.Doctor)
+                .AsQueryable();
+
+            // Filter by payment status
+            switch (status.ToLower())
+            {
+                case "pending":
+                    paymentsQuery = paymentsQuery.Where(p => p.PaymentStatus == PaymentStatus.Pending);
+                    ViewBag.CurrentFilter = "Pending";
+                    break;
+                case "completed":
+                    paymentsQuery = paymentsQuery.Where(p => p.PaymentStatus == PaymentStatus.Completed);
+                    ViewBag.CurrentFilter = "Completed";
+                    break;
+                case "failed":
+                    paymentsQuery = paymentsQuery.Where(p => p.PaymentStatus == PaymentStatus.Failed);
+                    ViewBag.CurrentFilter = "Failed";
+                    break;
+                default:
+                    ViewBag.CurrentFilter = "All";
+                    break;
+            }
+
+            var payments = paymentsQuery
+                .OrderByDescending(p => p.PaymentId)
+                .ToList();
+
+            // Pass summary statistics
+            ViewBag.TotalPayments = payments.Count;
+            ViewBag.TotalAmount = payments.Sum(p => p.Amount);
+            ViewBag.PendingCount = _context.Payments.Count(p => p.PaymentStatus == PaymentStatus.Pending);
+            ViewBag.CompletedCount = _context.Payments.Count(p => p.PaymentStatus == PaymentStatus.Completed);
+            ViewBag.FailedCount = _context.Payments.Count(p => p.PaymentStatus == PaymentStatus.Failed);
+
+            return View(payments);
+        }
+
+      
+        public IActionResult PaymentDetails(int id)
+        {
+            var payment = _context.Payments
+                .Include(p => p.Appointment)
+                    .ThenInclude(a => a.Patient)
+                .Include(p => p.Appointment)
+                    .ThenInclude(a => a.Doctor)
+                .Include(p => p.Appointment)
+                    .ThenInclude(a => a.Clinic)
+                .FirstOrDefault(p => p.PaymentId == id);
+
+            if (payment == null)
+            {
+                return NotFound();
+            }
+
+            return View(payment);
+        }
+
+      
+        [HttpPost]
+        public IActionResult ApprovePayment(int id, string? transactionId = null)
+        {
+            try
+            {
+                var payment = _context.Payments.Find(id);
+
+                if (payment == null)
+                {
+                    TempData["Error"] = "Payment not found.";
+                    return RedirectToAction("Payments");
+                }
+
+                if (payment.PaymentStatus != PaymentStatus.Pending)
+                {
+                    TempData["Warning"] = "Only pending payments can be approved.";
+                    return RedirectToAction("PaymentDetails", new { id = id });
+                }
+
+                // Update payment status
+                payment.PaymentStatus = PaymentStatus.Completed;
+                payment.PaidAt = DateTime.Now;
+
+                // Set transaction ID if provided
+                if (!string.IsNullOrEmpty(transactionId))
+                {
+                    payment.TransactionId = transactionId;
+                }
+                else
+                {
+                    // Generate a simple transaction ID if none provided
+                    payment.TransactionId = $"ADMIN_{DateTime.Now:yyyyMMddHHmmss}_{payment.PaymentId}";
+                }
+
+                _context.SaveChanges();
+
+                TempData["Success"] = $"Payment #{payment.PaymentId} has been approved successfully.";
+                return RedirectToAction("PaymentDetails", new { id = id });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Failed to approve payment: {ex.Message}";
+                return RedirectToAction("PaymentDetails", new { id = id });
+            }
+        }
+
+        
+        [HttpPost]
+        public IActionResult RejectPayment(int id, string? rejectionReason = null)
+        {
+            try
+            {
+                var payment = _context.Payments.Find(id);
+
+                if (payment == null)
+                {
+                    TempData["Error"] = "Payment not found.";
+                    return RedirectToAction("Payments");
+                }
+
+                if (payment.PaymentStatus != PaymentStatus.Pending)
+                {
+                    TempData["Warning"] = "Only pending payments can be rejected.";
+                    return RedirectToAction("PaymentDetails", new { id = id });
+                }
+
+                // Update payment status
+                payment.PaymentStatus = PaymentStatus.Failed;
+
+                // Store rejection reason in transaction ID field for reference
+                if (!string.IsNullOrEmpty(rejectionReason))
+                {
+                    payment.TransactionId = $"REJECTED: {rejectionReason}";
+                }
+                else
+                {
+                    payment.TransactionId = $"REJECTED_BY_ADMIN_{DateTime.Now:yyyyMMddHHmmss}";
+                }
+
+                _context.SaveChanges();
+
+                TempData["Success"] = $"Payment #{payment.PaymentId} has been rejected.";
+                return RedirectToAction("PaymentDetails", new { id = id });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = $"Failed to reject payment: {ex.Message}";
+                return RedirectToAction("PaymentDetails", new { id = id });
+            }
+        }
+
     }
 }

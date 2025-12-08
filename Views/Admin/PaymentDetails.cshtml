@@ -1,0 +1,284 @@
+﻿@model WebApplication1.Models.Payment
+
+@{
+    ViewData["Title"] = "Payment Details";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Payment Details - #@Model.PaymentId</h3>
+                    <div class="card-tools">
+                        <a href="@Url.Action("Payments")" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Back to Payments
+                        </a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Payment Information -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Payment Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>Payment ID:</strong></td>
+                                            <td>#@Model.PaymentId</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Amount:</strong></td>
+                                            <td><span class="h5 text-success">@Model.Amount.ToString("C") @Model.Currency</span></td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Status:</strong></td>
+                                            <td>
+                                                @switch (Model.PaymentStatus)
+                                                {
+                                                    case PaymentStatus.Pending:
+                                                        <span class="badge badge-warning badge-lg">Pending</span>
+                                                        break;
+                                                    case PaymentStatus.Completed:
+                                                        <span class="badge badge-success badge-lg">Completed</span>
+                                                        break;
+                                                    case PaymentStatus.Failed:
+                                                        <span class="badge badge-danger badge-lg">Failed</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge badge-secondary badge-lg">Unknown</span>
+                                                        break;
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Transaction ID:</strong></td>
+                                            <td>@(Model.TransactionId ?? "Not assigned")</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>Payment Date:</strong></td>
+                                            <td>
+                                                @if (Model.PaidAt.HasValue)
+                                                {
+                                                    <span>@Model.PaidAt.Value.ToString("MMM dd, yyyy hh:mm tt")</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Not paid yet</span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Appointment Information -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Appointment Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    @if (Model.Appointment != null)
+                                    {
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td><strong>Appointment ID:</strong></td>
+                                                <td>
+                                                    <a href="@Url.Action("AppointmentDetails", new { id = Model.Appointment.AppointmentId })">
+                                                        #@Model.Appointment.AppointmentId
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Date & Time:</strong></td>
+                                                <td>@Model.Appointment.AppointmentDate.ToString("MMM dd, yyyy") at @Model.Appointment.AppointmentTime.ToString(@"hh\:mm")</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Type:</strong></td>
+                                                <td>
+                                                    @if (Model.Appointment.Type == AppointmentType.Video)
+                                                    {
+                                                        <span class="badge badge-info">Video Call</span>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span class="badge badge-primary">In-Person</span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Status:</strong></td>
+                                                <td>
+                                                    @switch (Model.Appointment.Status)
+                                                    {
+                                                        case AppointmentStatus.Pending:
+                                                            <span class="badge badge-warning">Pending</span>
+                                                            break;
+                                                        case AppointmentStatus.Confirmed:
+                                                            <span class="badge badge-info">Confirmed</span>
+                                                            break;
+                                                        case AppointmentStatus.Completed:
+                                                            <span class="badge badge-success">Completed</span>
+                                                            break;
+                                                        case AppointmentStatus.Cancelled:
+                                                            <span class="badge badge-danger">Cancelled</span>
+                                                            break;
+                                                    }
+                                                </td>
+                                            </tr>
+                                            @if (Model.Appointment.Clinic != null)
+                                            {
+                                                <tr>
+                                                    <td><strong>Clinic:</strong></td>
+                                                    <td>@Model.Appointment.Clinic.ClinicName</td>
+                                                </tr>
+                                            }
+                                        </table>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted">No appointment information available.</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mt-4">
+                        <!-- Patient Information -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Patient Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    @if (Model.Appointment?.Patient != null)
+                                    {
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td><strong>Name:</strong></td>
+                                                <td>
+                                                    <a href="@Url.Action("PatientDetails", new { id = Model.Appointment.Patient.PatientId })">
+                                                        @Model.Appointment.Patient.FirstName @Model.Appointment.Patient.LastName
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Email:</strong></td>
+                                                <td>@Model.Appointment.Patient.Email</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Phone:</strong></td>
+                                                <td>@Model.Appointment.Patient.PhoneNumber</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Age:</strong></td>
+                                                <td>@Model.Appointment.Patient.Age years</td>
+                                            </tr>
+                                        </table>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted">No patient information available.</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Doctor Information -->
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5>Doctor Information</h5>
+                                </div>
+                                <div class="card-body">
+                                    @if (Model.Appointment?.Doctor != null)
+                                    {
+                                        <table class="table table-borderless">
+                                            <tr>
+                                                <td><strong>Name:</strong></td>
+                                                <td>
+                                                    <a href="@Url.Action("DoctorDetails", new { id = Model.Appointment.Doctor.DoctorId })">
+                                                        Dr. @Model.Appointment.Doctor.FirstName @Model.Appointment.Doctor.LastName
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Specialization:</strong></td>
+                                                <td>@Model.Appointment.Doctor.Specialization</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Experience:</strong></td>
+                                                <td>@Model.Appointment.Doctor.ExperienceYears years</td>
+                                            </tr>
+                                            <tr>
+                                                <td><strong>Fee:</strong></td>
+                                                <td>@Model.Appointment.Fee.ToString("C")</td>
+                                            </tr>
+                                        </table>
+                                    }
+                                    else
+                                    {
+                                        <p class="text-muted">No doctor information available.</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    @if (Model.PaymentStatus == PaymentStatus.Pending)
+                    {
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5>Payment Actions</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <form method="post" asp-action="ApprovePayment" class="d-inline">
+                                                    <input type="hidden" name="id" value="@Model.PaymentId">
+                                                    <div class="form-group">
+                                                        <label for="transactionId">Transaction ID (Optional):</label>
+                                                        <input type="text" class="form-control" name="transactionId" id="transactionId"
+                                                               placeholder="Enter transaction ID if available">
+                                                    </div>
+                                                    <button type="submit" class="btn btn-success btn-lg"
+                                                            onclick="return confirm('Are you sure you want to approve this payment?')">
+                                                        <i class="fas fa-check"></i> Approve Payment
+                                                    </button>
+                                                </form>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <form method="post" asp-action="RejectPayment" class="d-inline">
+                                                    <input type="hidden" name="id" value="@Model.PaymentId">
+                                                    <div class="form-group">
+                                                        <label for="rejectionReason">Rejection Reason (Optional):</label>
+                                                        <textarea class="form-control" name="rejectionReason" id="rejectionReason" rows="3"
+                                                              placeholder="Enter reason for rejection"></textarea>
+                                                    </div>
+                                                    <button type="submit" class="btn btn-danger btn-lg"
+                                                            onclick="return confirm('Are you sure you want to reject this payment?')">
+                                                        <i class="fas fa-times"></i> Reject Payment
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

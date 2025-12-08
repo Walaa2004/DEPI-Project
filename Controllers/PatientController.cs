@@ -1,16 +1,21 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using WebApplication1.Models;
+using WebApplication1.Services;
 
 namespace WebApplication1.Controllers
 {
     public class PatientController : Controller
     {
-        DBContext db;
+        private readonly DBContext db;
+        private readonly ZoomService? _zoomService;
 
-        public PatientController()
+        // Fix the constructor to properly handle dependency injection
+        public PatientController(IServiceProvider serviceProvider)
         {
             db = new DBContext();
+            // Try to get ZoomService, but don't fail if it's not registered
+            _zoomService = serviceProvider.GetService<ZoomService>();
         }
 
         [HttpGet]
@@ -222,9 +227,7 @@ namespace WebApplication1.Controllers
             return View(appointmentHistory);
         }
 
-
-
-        // NEW: View Available Appointments (created by doctors)
+        // Update your existing AvailableAppointments method to show ALL types (or default to in-person)
         [Route("Patient/AvailableAppointments/{id:int}")]
         public IActionResult AvailableAppointments(int id)
         {
@@ -234,8 +237,8 @@ namespace WebApplication1.Controllers
                 return RedirectToAction("Login");
             }
 
-            // Get appointments that are available for booking (PatientId is null)
-            var availableAppointments = db.Appointments
+            // Show ALL appointment types (both in-person and video)
+            var allAvailableAppointments = db.Appointments
                 .Include(a => a.Doctor)
                 .Include(a => a.Clinic)
                 .Where(a => a.PatientId == null) // Available appointments
@@ -245,14 +248,91 @@ namespace WebApplication1.Controllers
                 .ThenBy(a => a.AppointmentTime)
                 .ToList();
 
+            // Get only the nearest appointment for each doctor (regardless of type)
+            var nearestAppointmentsByDoctor = allAvailableAppointments
+                .GroupBy(a => a.DoctorId)
+                .Select(group => group
+                    .OrderBy(a => a.AppointmentDate)
+                    .ThenBy(a => a.AppointmentTime)
+                    .First()) // Take the earliest appointment for each doctor
+                .OrderBy(a => a.AppointmentDate)
+                .ThenBy(a => a.AppointmentTime)
+                .ToList();
+
             ViewBag.Patient = patient;
-            return View(availableAppointments);
+            ViewBag.ShowFilter = true; // Flag to show filter buttons
+            return View(nearestAppointmentsByDoctor);
         }
 
-        // NEW: Book a specific appointment (insert PatientId)
+        // Update both new methods to not show filter buttons
+        [Route("Patient/AvailableInPersonAppointments/{id:int}")]
+        public IActionResult AvailableInPersonAppointments(int id)
+        {
+            var patient = db.Patients.Find(id);
+            if (patient == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var nearestInPersonAppointments = db.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.Clinic)
+                .Where(a => a.PatientId == null) // Available appointments
+                .Where(a => a.Status == AppointmentStatus.Pending)
+                .Where(a => a.Type == AppointmentType.InPerson) // In-person only
+                .Where(a => a.AppointmentDate >= DateTime.Today)
+                .GroupBy(a => a.DoctorId)
+                .AsEnumerable()
+                .Select(group => group
+                    .OrderBy(a => a.AppointmentDate)
+                    .ThenBy(a => a.AppointmentTime)
+                    .First())
+                .OrderBy(a => a.AppointmentDate)
+                .ThenBy(a => a.AppointmentTime)
+                .ToList();
+
+            ViewBag.Patient = patient;
+            ViewBag.ShowFilter = false; // Don't show filter buttons
+            ViewBag.FilterType = "In-Person"; // Show current filter
+            return View("AvailableAppointments", nearestInPersonAppointments);
+        }
+
+        [Route("Patient/AvailableVideoAppointments/{id:int}")]
+        public IActionResult AvailableVideoAppointments(int id)
+        {
+            var patient = db.Patients.Find(id);
+            if (patient == null)
+            {
+                return RedirectToAction("Login");
+            }
+
+            var nearestVideoAppointments = db.Appointments
+                .Include(a => a.Doctor)
+                .Include(a => a.Clinic)
+                .Where(a => a.PatientId == null) // Available appointments
+                .Where(a => a.Status == AppointmentStatus.Pending)
+                .Where(a => a.Type == AppointmentType.Video) // Video only
+                .Where(a => a.AppointmentDate >= DateTime.Today)
+                .GroupBy(a => a.DoctorId)
+                .AsEnumerable()
+                .Select(group => group
+                    .OrderBy(a => a.AppointmentDate)
+                    .ThenBy(a => a.AppointmentTime)
+                    .First())
+                .OrderBy(a => a.AppointmentDate)
+                .ThenBy(a => a.AppointmentTime)
+                .ToList();
+
+            ViewBag.Patient = patient;
+            ViewBag.ShowFilter = false; // Don't show filter buttons
+            ViewBag.FilterType = "Video"; // Show current filter
+            return View("AvailableAppointments", nearestVideoAppointments);
+        }
+
+        // FIXED: Updated BookAppointment method with proper Zoom integration and fallback
         [HttpPost]
         [Route("Patient/BookAppointment")]
-        public IActionResult BookAppointment(int appointmentId, int patientId, string? symptoms)
+        public async Task<IActionResult> BookAppointment(int appointmentId, int patientId, string? symptoms)
         {
             try
             {
@@ -289,25 +369,93 @@ namespace WebApplication1.Controllers
                     appointment.Symptoms = symptoms;
                 }
 
-                // Set clinic if it's an in-person appointment
-                if (appointment.Type == AppointmentType.InPerson && appointment.Doctor.ClinicId.HasValue)
-                {
-                    appointment.ClinicId = appointment.Doctor.ClinicId;
-                }
-
-                // Generate session ID for video appointments
+                // Handle different appointment types
                 if (appointment.Type == AppointmentType.Video)
                 {
-                    appointment.SessionId = new Random().Next(100000, 999999);
+                    // Default fallback URL
+                    string videoCallUrl = "https://zoom.us/j/2176899212?pwd=JlUCylFK7mCfuUZc3IsgbuV5aGVACy.1";
+                    string successMessage = "Video appointment successfully booked";
+
+                    // DEBUG: Log the   fallback URL
+                    Console.WriteLine($"DEBUG: Using fallback URL: {videoCallUrl}");
+
+                    // Try to create Zoom meeting if service is available
+                    if (_zoomService != null)
+                    {
+                        try
+                        {
+                            var meetingTopic = $"Medical Consultation - Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName} with {patient.FirstName} {patient.LastName}";
+                            var startTime = appointment.AppointmentDate.Add(appointment.AppointmentTime);
+                            var durationMinutes = 60;
+
+                            var zoomMeeting = await _zoomService.CreateMeetingAsync(
+                                meetingTopic,
+                                startTime,
+                                durationMinutes,
+                                appointment.Doctor.Email
+                            );
+
+                            if (zoomMeeting != null && !string.IsNullOrEmpty(zoomMeeting.JoinUrl))
+                            {
+                                videoCallUrl = zoomMeeting.JoinUrl;
+                                Console.WriteLine($"DEBUG: Zoom meeting created successfully: {videoCallUrl}");
+                                successMessage = $"Video appointment successfully booked with Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}! Zoom meeting has been created.";
+                            }
+                            else
+                            {
+                                Console.WriteLine("DEBUG: Zoom meeting creation returned null or empty URL");
+                            }
+                        }
+                        catch (Exception zoomEx)
+                        {
+                            // Log but continue with fallback URL
+                            Console.WriteLine($"Zoom creation failed: {zoomEx.Message}");
+                            successMessage = $"Video appointment successfully booked with Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}! Using backup video link.";
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("DEBUG: ZoomService is null, using fallback URL");
+                        successMessage = $"Video appointment successfully booked with Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}! Using backup video link.";
+                    }
+
+                    // CREATE VideoCallSession record
+                    var videoSession = new VideoCallSession
+                    {
+                        AppointmentId = appointment.AppointmentId,
+                        StartTime = appointment.AppointmentDate.Add(appointment.AppointmentTime),
+                        Status = VideoCallStatus.Scheduled,
+                        SessionType = SessionType.Consultation,
+                        VideoCallUrl = videoCallUrl, // This will always have a value now
+                        SessionTime = appointment.AppointmentDate.Add(appointment.AppointmentTime)
+                    };
+
+                    Console.WriteLine($"DEBUG: Creating VideoCallSession with URL: {videoCallUrl}");
+
+                    db.VideoCallSessions.Add(videoSession);
+                    db.SaveChanges();
+                    Console.WriteLine($"DEBUG: VideoCallSession saved with SessionId: {videoSession.SessionId}");
+
+                    appointment.SessionId = videoSession.SessionId;
+
+                    TempData["Success"] = successMessage;
+                }
+                else if (appointment.Type == AppointmentType.InPerson && appointment.Doctor.ClinicId.HasValue)
+                {
+                    // Set clinic for in-person appointments
+                    appointment.ClinicId = appointment.Doctor.ClinicId;
+                    TempData["Success"] = $"In-person appointment successfully booked with Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}!";
                 }
 
                 db.SaveChanges();
+                Console.WriteLine($"DEBUG: Appointment saved with SessionId: {appointment.SessionId}");
 
-                TempData["Success"] = $"Appointment successfully booked with Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}!";
                 return RedirectToAction("UpcomingAppointments", new { id = patientId });
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"DEBUG: Exception in BookAppointment: {ex.Message}");
+
                 TempData["Error"] = $"Failed to book appointment: {ex.Message}";
                 return RedirectToAction("AvailableAppointments", new { id = patientId });
             }
@@ -329,6 +477,8 @@ namespace WebApplication1.Controllers
                 .Include(a => a.Clinic)
 
                 .Where(a => a.PatientId == id)
+                .Include(a => a.VideoCallSession)
+                // 1. Only show Future appointments
                 .Where(a => a.AppointmentDate > today || (a.AppointmentDate == today && a.AppointmentTime >= now.TimeOfDay))
                 .Where(a => a.Status != AppointmentStatus.Cancelled)
                 .OrderBy(a => a.AppointmentDate)
@@ -459,7 +609,6 @@ namespace WebApplication1.Controllers
                 existingPatient.Weight = model.Weight;
                 existingPatient.Allergies = model.Allergies;
                 existingPatient.Address = model.Address;
-
 
                 db.SaveChanges();
 

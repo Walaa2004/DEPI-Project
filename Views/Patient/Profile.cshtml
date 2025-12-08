@@ -1,122 +1,162 @@
 ﻿@model Patient
 
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-10">
-                <div class="card">
-                    <div class="card-header bg-primary text-white">
-                        <h3 class="mb-0">Patient Dashboard</h3>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0">Patient Dashboard</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-success">
+                        <i class="fas fa-user-circle me-2"></i>
+                        Welcome to your profile, @Model.FirstName @Model.LastName!
                     </div>
-                    <div class="card-body">
-                        <div class="alert alert-success">
-                            <i class="fas fa-user-circle me-2"></i>
-                            Welcome to your profile, @Model.FirstName @Model.LastName!
-                        </div>
 
-                        <hr>
+                    <hr>
 
-                        <div class="row mt-4">
-                            <!-- Upcoming Appointments -->
-                            <div class="col-md-4 mb-3">
-                                <a href="/Patient/UpcomingAppointments/@Model.PatientId" class="text-decoration-none">
-                                    <div class="card bg-info text-white h-100 hover-card">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-calendar-check fa-3x mb-3"></i>
-                                            <h5>Upcoming Appointments</h5>
-                                            <p>View scheduled appointments</p>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <!-- Appointment History -->
-                            <div class="col-md-4 mb-3">
-                                <a href="/patient/AppointmentHistory/@Model.PatientId" class="text-decoration-none">
-                                    <div class="card bg-success text-white h-100 hover-card">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-history fa-3x mb-3"></i>
-                                            <h5>Appointment History</h5>
-                                            <p>View past appointments</p>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <!-- Payment History -->
-                            <div class="col-md-4 mb-3">
-                                <a href="/patient/payment/@Model.PatientId" class="text-decoration-none">
-                                    <div class="card bg-warning text-white h-100 hover-card">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-credit-card fa-3x mb-3"></i>
-                                            <h5>Payments</h5>
-                                            <p>View payment history</p>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <!-- Profile Info -->
-                            <div class="col-md-4 mb-3">
-                                <a href="/Patient/ProfileInfo/@Model.PatientId" class="text-decoration-none">
-                                    <div class="card bg-secondary text-white h-100 hover-card">
-                                        <div class="card-body text-center">
-                                            <i class="fas fa-user-edit fa-3x mb-3"></i>
-                                            <h5>Profile Info</h5>
-                                            <p>View and edit profile</p>
-                                        </div>
-                                    </div>
-                                </a>
-                            </div>
-
-                            <!-- Book New Appointment -->
-                        <a href="/Patient/AvailableAppointments/@Model.PatientId" class="text-decoration-none">
-                            <div class="card bg-dark text-white h-100 hover-card">
-                                <div class="card-body text-center">
-                                    <i class="fas fa-plus-circle fa-3x mb-3"></i>
-                                    <h5>View Available Appointments</h5>
-                                    <p>Book from available slots</p>
-                                </div>
-                            </div>
-                        </a>
-
-                        <!-- Quick Patient Summary -->
-                        <div class="row mt-4">
-                            <div class="col-md-12">
-                                <div class="card bg-light">
-                                    <div class="card-body">
-                                        <h5 class="card-title">
-                                            <i class="fas fa-info-circle me-2"></i>
-                                            Quick Patient Summary
-                                        </h5>
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <p><strong>Patient ID:</strong> @Model.PatientId</p>
-                                                <p><strong>Email:</strong> @Model.Email</p>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <p><strong>Phone:</strong> @Model.PhoneNumber</p>
-                                                <p><strong>Age:</strong> @Model.Age years</p>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <p><strong>Gender:</strong> @Model.Gender</p>
-                                                <p><strong>Blood Group:</strong> @(Model.BloodGroup ?? "Not specified")</p>
-                                            </div>
-                                        </div>
+                    <div class="row mt-4">
+                        <!-- Upcoming Appointments -->
+                        <div class="col-md-4 mb-3">
+                            <a href="/Patient/UpcomingAppointments/@Model.PatientId" class="text-decoration-none">
+                                <div class="card bg-info text-white h-100 hover-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-calendar-check fa-3x mb-3"></i>
+                                        <h5>Upcoming Appointments</h5>
+                                        <p>View scheduled appointments</p>
                                     </div>
                                 </div>
-                            </div>
-                        </div>
-
-                        <!-- Logout -->
-                        <div class="mt-4 text-center">
-                            <a href="/Patient/Login" class="btn btn-outline-secondary">
-                                <i class="fas fa-sign-out-alt me-2"></i>Logout
                             </a>
                         </div>
+
+                        <!-- Appointment History -->
+                        <div class="col-md-4 mb-3">
+                            <a href="/patient/AppointmentHistory/@Model.PatientId" class="text-decoration-none">
+                                <div class="card bg-success text-white h-100 hover-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-history fa-3x mb-3"></i>
+                                        <h5>Appointment History</h5>
+                                        <p>View past appointments</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Payment History -->
+                        <div class="col-md-4 mb-3">
+                            <a href="/patient/payment/@Model.PatientId" class="text-decoration-none">
+                                <div class="card bg-warning text-white h-100 hover-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-credit-card fa-3x mb-3"></i>
+                                        <h5>Payments</h5>
+                                        <p>View payment history</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- Profile Info -->
+                        <div class="col-md-4 mb-3">
+                            <a href="/Patient/ProfileInfo/@Model.PatientId" class="text-decoration-none">
+                                <div class="card bg-secondary text-white h-100 hover-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-edit fa-3x mb-3"></i>
+                                        <h5>Profile Info</h5>
+                                        <p>View and edit profile</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- REPLACED: Book All Appointments -->
+                        <div class="col-md-4 mb-3">
+                            <a href="/Patient/AvailableAppointments/@Model.PatientId" class="text-decoration-none">
+                                <div class="card bg-dark text-white h-100 hover-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-th-list fa-3x mb-3"></i>
+                                        <h5>All Appointments</h5>
+                                        <p>Book any available appointment</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        @* <!-- NEW: Book In-Person Appointments -->
+                        <div class="col-md-4 mb-3">
+                            <a href="/Patient/AvailableInPersonAppointments/@Model.PatientId" class="text-decoration-none">
+                                <div class="card bg-primary text-white h-100 hover-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-md fa-3x mb-3"></i>
+                                        <h5>In-Person Visits</h5>
+                                        <p>Book clinic appointments</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+
+                        <!-- NEW: Book Video Appointments -->
+                        <div class="col-md-4 mb-3">
+                            <a href="/Patient/AvailableVideoAppointments/@Model.PatientId" class="text-decoration-none">
+                                <div class="card bg-info text-white h-100 hover-card">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-video fa-3x mb-3"></i>
+                                        <h5>Video Consultations</h5>
+                                        <p>Book online appointments</p>
+                                    </div>
+                                </div>
+                            </a>
+                        </div> *@
+
+                        <!-- Empty space for layout balance -->
+                        <div class="col-md-4 mb-3"></div>
+                    </div>
+
+                    <!-- Quick Patient Summary -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-info-circle me-2"></i>
+                                        Quick Patient Summary
+                                    </h5>
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <p><strong>Patient ID:</strong> @Model.PatientId</p>
+                                            <p><strong>Email:</strong> @Model.Email</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p><strong>Phone:</strong> @Model.PhoneNumber</p>
+                                            <p><strong>Age:</strong> @Model.Age years</p>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <p><strong>Gender:</strong> @Model.Gender</p>
+                                            <p><strong>Blood Group:</strong> @(Model.BloodGroup ?? "Not specified")</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Logout -->
+                    <div class="mt-4 text-center">
+                        <a href="/Patient/Login" class="btn btn-outline-secondary">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-   \
+<style>
+    .hover-card {
+        transition: transform 0.2s;
+    }
+
+    .hover-card:hover {
+        transform: translateY(-5px);
+    }
+</style>

@@ -86,7 +86,18 @@
                                         @if (isVideo)
                                         {
                                             <strong class="d-block text-info">Online Video Call</strong>
-                                            <small class="text-muted">Link provided before session</small>
+                                            @if (item.VideoCallSession != null && !string.IsNullOrEmpty(item.VideoCallSession.VideoCallUrl))
+                                            {
+                                                <div class="mt-2">
+                                                    <a href="@item.VideoCallSession.VideoCallUrl" 
+                                                    target="_blank" 
+                                                    class="btn btn-sm btn-info">
+                                                        <i class="bi bi-camera-video me-1"></i>Join Zoom Meeting
+                                                    </a>
+                                                </div>
+                                                <small class="text-muted d-block mt-1">
+                                                    Meeting starts: @item.VideoCallSession.StartTime.ToString("MMM dd, yyyy hh:mm tt")
+                                                </small>}
                                         }
                                         else
                                         {

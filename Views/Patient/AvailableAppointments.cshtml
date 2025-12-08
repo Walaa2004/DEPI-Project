@@ -12,6 +12,30 @@
         </a>
     </div>
 
+    <!-- NEW: Appointment Type Filter -->
+    @if (ViewBag.ShowFilter == true)
+    {
+        <div class="card mb-4">
+            <div class="card-body">
+                <h6 class="card-title"><i class="fas fa-filter me-2"></i>Filter by Appointment Type</h6>
+                <div class="btn-group" role="group">
+                    <a href="@Url.Action("AvailableAppointments", new { id = patient?.PatientId })"
+                       class="btn btn-outline-primary">
+                        <i class="fas fa-th-list me-1"></i>All Appointments
+                    </a>
+                    <a href="@Url.Action("AvailableInPersonAppointments", new { id = patient?.PatientId })"
+                       class="btn btn-primary">
+                        <i class="fas fa-user-md me-1"></i>In-Person Only
+                    </a>
+                    <a href="@Url.Action("AvailableVideoAppointments", new { id = patient?.PatientId })"
+                       class="btn btn-info">
+                        <i class="fas fa-video me-1"></i>Video Only
+                    </a>
+                </div>
+            </div>
+        </div>
+    }
+
     @if (TempData["Error"] != null)
     {
         <div class="alert alert-danger">
@@ -38,8 +62,18 @@
                                 <h5 class="card-title text-primary mb-0">
                                     Dr. @appointment.Doctor.FirstName @appointment.Doctor.LastName
                                 </h5>
+                                <!-- Show appointment type badge -->
                                 <span class="badge @(appointment.Type == AppointmentType.Video ? "bg-info" : "bg-primary")">
-                                    @(appointment.Type == AppointmentType.Video ? "Video Call" : "In-Person")
+                                    @if (appointment.Type == AppointmentType.Video)
+                                    {
+                                        <i class="fas fa-video me-1" Video Call></i>
+                                       
+                                                                }
+                                    else
+                                    {
+                                        <i class="fas fa-user-md me-1"> In - Person</i>
+                                       
+                                                        }
                                 </span>
                             </div>
 
@@ -53,6 +87,10 @@
                                 @if (appointment.Type == AppointmentType.InPerson && appointment.Doctor.Clinic != null)
                                 {
                                     <p class="mb-0"><strong>Location:</strong> @appointment.Doctor.Clinic.ClinicName</p>
+                                }
+                                else if (appointment.Type == AppointmentType.Video)
+                                {
+                                    <p class="mb-0"><strong>Platform:</strong> Zoom Meeting</p>
                                 }
                             </div>
 
