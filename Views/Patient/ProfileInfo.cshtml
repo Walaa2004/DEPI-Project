@@ -63,11 +63,26 @@
                     @if (ViewBag.NextAppointment != null)
                     {
                         var appt = ViewBag.NextAppointment as WebApplication1.Models.Appointment;
+
+                        // تجهيز العنوان (نفس المنطق: العيادة -> عيادة الدكتور -> عنوان الدكتور)
+                        var address = appt.Clinic?.Address
+                        ?? appt.Doctor?.Clinic?.Address
+                        ?? appt.Doctor?.Address
+                        ?? "Contact doctor for details";
+
                         <h4 class="card-title text-primary">@appt.AppointmentDate.ToString("MMM dd, yyyy")</h4>
                         <p class="fw-bold">@DateTime.Today.Add(appt.AppointmentTime).ToString("hh:mm tt")</p>
+
                         <hr />
-                        <p><strong>Doctor:</strong> Dr. @appt.Doctor?.FirstName @appt.Doctor?.LastName</p>
-                        <p><strong>Clinic:</strong> @appt.Clinic?.ClinicName</p>
+
+                        <p class="mb-2">
+                            <strong>Doctor:</strong> Dr. @(appt.Doctor != null ? appt.Doctor.FirstName + " " + appt.Doctor.LastName : "Unknown")
+                        </p>
+
+                        <p class="mb-3">
+                            <strong>Location:</strong> @address
+                        </p>
+
                         <a href="@Url.Action("UpcomingAppointments", new { id = Model.PatientId })" class="btn btn-outline-primary btn-sm">View All</a>
                     }
                     else
@@ -110,4 +125,4 @@
             </div>
         </div>
     </div>
-</div>          
+</div>

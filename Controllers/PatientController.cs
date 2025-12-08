@@ -473,12 +473,13 @@ namespace WebApplication1.Controllers
 
             var upcomingAppointments = db.Appointments
                 .Include(a => a.Doctor)
+                .ThenInclude(d => d.Clinic)
                 .Include(a => a.Clinic)
+
                 .Where(a => a.PatientId == id)
                 .Include(a => a.VideoCallSession)
                 // 1. Only show Future appointments
                 .Where(a => a.AppointmentDate > today || (a.AppointmentDate == today && a.AppointmentTime >= now.TimeOfDay))
-                // 2. Do NOT show cancelled appointments
                 .Where(a => a.Status != AppointmentStatus.Cancelled)
                 .OrderBy(a => a.AppointmentDate)
                 .ThenBy(a => a.AppointmentTime)
@@ -487,7 +488,6 @@ namespace WebApplication1.Controllers
             ViewBag.Patient = patient;
             return View(upcomingAppointments);
         }
-
         // POST: Cancel Appointment
         [HttpPost]
         public IActionResult CancelAppointment(int id)
