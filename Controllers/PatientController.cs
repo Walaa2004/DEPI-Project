@@ -313,10 +313,6 @@ namespace WebApplication1.Controllers
             }
         }
 
-
-
-
-
         // GET: Upcoming Appointments
         [Route("Patient/UpcomingAppointments/{id:int}")]
         public IActionResult UpcomingAppointments(int id)
@@ -329,11 +325,11 @@ namespace WebApplication1.Controllers
 
             var upcomingAppointments = db.Appointments
                 .Include(a => a.Doctor)
+                .ThenInclude(d => d.Clinic)
                 .Include(a => a.Clinic)
+
                 .Where(a => a.PatientId == id)
-                // 1. Only show Future appointments
                 .Where(a => a.AppointmentDate > today || (a.AppointmentDate == today && a.AppointmentTime >= now.TimeOfDay))
-                // 2. Do NOT show cancelled appointments
                 .Where(a => a.Status != AppointmentStatus.Cancelled)
                 .OrderBy(a => a.AppointmentDate)
                 .ThenBy(a => a.AppointmentTime)
@@ -342,7 +338,6 @@ namespace WebApplication1.Controllers
             ViewBag.Patient = patient;
             return View(upcomingAppointments);
         }
-
         // POST: Cancel Appointment
         [HttpPost]
         public IActionResult CancelAppointment(int id)
@@ -367,7 +362,6 @@ namespace WebApplication1.Controllers
             return RedirectToAction("Login");
         }
 
-        // NEW: Profile Info Action
         // NEW: Profile Info Action
         [Route("Patient/ProfileInfo/{id:int}")]
         public IActionResult ProfileInfo(int id)
@@ -478,7 +472,5 @@ namespace WebApplication1.Controllers
                 return View(model);
             }
         }
-
-
     }
 }
