@@ -41,7 +41,7 @@ namespace WebApplication1.Services
                         mute_upon_entry = false,
                         watermark = false,
                         use_pmi = false,
-                        approval_type = 2, // No registration required
+                        approval_type = 2, 
                         audio = "both",
                         auto_recording = "none",
                         waiting_room = false

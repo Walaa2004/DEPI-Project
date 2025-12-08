@@ -7,7 +7,7 @@
 <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2>Available Appointments</h2>
-        <a href="@Url.Action("Profile", new { id = patient?.PatientId })" class="btn btn-outline-secondary">
+        <a href="/Patient/Profile/@patient?.PatientId" class="btn btn-outline-secondary">
             <i class="fas fa-arrow-left me-1"></i>Back to Profile
         </a>
     </div>
@@ -19,15 +19,15 @@
             <div class="card-body">
                 <h6 class="card-title"><i class="fas fa-filter me-2"></i>Filter by Appointment Type</h6>
                 <div class="btn-group" role="group">
-                    <a href="@Url.Action("AvailableAppointments", new { id = patient?.PatientId })"
+                    <a href="/Patient/AvailableAppointments/@patient?.PatientId"
                        class="btn btn-outline-primary">
                         <i class="fas fa-th-list me-1"></i>All Appointments
                     </a>
-                    <a href="@Url.Action("AvailableInPersonAppointments", new { id = patient?.PatientId })"
+                    <a href="/Patient/AvailableInPersonAppointments/@patient?.PatientId"
                        class="btn btn-primary">
                         <i class="fas fa-user-md me-1"></i>In-Person Only
                     </a>
-                    <a href="@Url.Action("AvailableVideoAppointments", new { id = patient?.PatientId })"
+                    <a href="/Patient/AvailableVideoAppointments/@patient?.PatientId"
                        class="btn btn-info">
                         <i class="fas fa-video me-1"></i>Video Only
                     </a>

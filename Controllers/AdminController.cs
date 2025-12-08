@@ -265,12 +265,7 @@ namespace WebApplication1.Controllers
                 .OrderByDescending(p => p.PaymentId)
                 .ToList();
 
-            // Pass summary statistics
-            ViewBag.TotalPayments = payments.Count;
-            ViewBag.TotalAmount = payments.Sum(p => p.Amount);
-            ViewBag.PendingCount = _context.Payments.Count(p => p.PaymentStatus == PaymentStatus.Pending);
-            ViewBag.CompletedCount = _context.Payments.Count(p => p.PaymentStatus == PaymentStatus.Completed);
-            ViewBag.FailedCount = _context.Payments.Count(p => p.PaymentStatus == PaymentStatus.Failed);
+         
 
             return View(payments);
         }
