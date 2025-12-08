@@ -464,10 +464,8 @@ namespace WebApplication1.Controllers
                 .Include(a => a.Doctor)
                 .ThenInclude(d => d.Clinic)
                 .Include(a => a.Clinic)
-
                 .Where(a => a.PatientId == id)
                 .Include(a => a.VideoCallSession)
-                // 1. Only show Future appointments
                 .Where(a => a.AppointmentDate > today || (a.AppointmentDate == today && a.AppointmentTime >= now.TimeOfDay))
                 .Where(a => a.Status != AppointmentStatus.Cancelled)
                 .OrderBy(a => a.AppointmentDate)
@@ -485,16 +483,9 @@ namespace WebApplication1.Controllers
 
             if (appointment != null)
             {
-                // 1. Change status to Cancelled (Enum value 4)
                 appointment.Status = AppointmentStatus.Cancelled;
-
-                // 2. Save changes to DB
                 db.SaveChanges();
-
-                // 3. Set a temporary success message
                 TempData["Success"] = "Your appointment has been successfully cancelled.";
-
-                // 4. Redirect back to the list (the cancelled item will now be hidden due to the filter above)
                 return RedirectToAction("UpcomingAppointments", new { id = appointment.PatientId });
             }
 
@@ -514,24 +505,23 @@ namespace WebApplication1.Controllers
             var now = DateTime.Now;
             var today = DateTime.Today;
 
-            // 1. FIX: Filter out Cancelled appointments from the Count
             var upcomingCount = db.Appointments
                .Where(a => a.PatientId == id)
-               .Where(a => a.Status != AppointmentStatus.Cancelled) // <--- ADDED THIS
+               .Where(a => a.Status != AppointmentStatus.Cancelled) 
                .Where(a => a.AppointmentDate > today || (a.AppointmentDate == today && a.AppointmentTime >= now.TimeOfDay))
                .Count();
 
             var pastCount = db.Appointments
                 .Where(a => a.PatientId == id)
+                .Where(a => a.Status != AppointmentStatus.Cancelled)
                 .Where(a => a.AppointmentDate < today || (a.AppointmentDate == today && a.AppointmentTime < now.TimeOfDay))
                 .Count();
 
-            // 2. FIX: Filter out Cancelled appointments from the Next Appointment card
             var nextAppointment = db.Appointments
                 .Include(a => a.Doctor)
                 .Include(a => a.Clinic)
                 .Where(a => a.PatientId == id)
-                .Where(a => a.Status != AppointmentStatus.Cancelled) // <--- ADDED THIS
+                .Where(a => a.Status != AppointmentStatus.Cancelled)
                 .Where(a => a.AppointmentDate > today || (a.AppointmentDate == today && a.AppointmentTime >= now.TimeOfDay))
                 .OrderBy(a => a.AppointmentDate)
                 .ThenBy(a => a.AppointmentTime)
@@ -587,7 +577,6 @@ namespace WebApplication1.Controllers
                     return RedirectToAction("Login");
                 }
 
-                // Update only the editable fields
                 existingPatient.FirstName = model.FirstName;
                 existingPatient.LastName = model.LastName;
                 existingPatient.PhoneNumber = model.PhoneNumber;
