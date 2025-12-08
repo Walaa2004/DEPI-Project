@@ -43,10 +43,10 @@ namespace WebApplication1.Models
                 .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Appointment>()
-      .HasOne(a => a.VideoCallSession)
-      .WithOne(v => v.Appointment)
-      .HasForeignKey<VideoCallSession>(v => v.AppointmentId)
-      .OnDelete(DeleteBehavior.Cascade);
+               .HasOne(a => a.VideoCallSession)
+               .WithOne(v => v.Appointment)
+               .HasForeignKey<VideoCallSession>(v => v.AppointmentId)
+               .OnDelete(DeleteBehavior.Cascade);
             // =========================================================
             // 3. Money Precision Fixes (To prevent warnings)
             // =========================================================
