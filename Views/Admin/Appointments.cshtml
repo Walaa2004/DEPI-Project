@@ -68,7 +68,7 @@
             </li>
             <li class="nav-item" role="presentation">
                 <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button">
-                    Completed
+                    Confirmed
                 </button>
             </li>
             <li class="nav-item" role="presentation">
@@ -199,7 +199,7 @@
             <!-- Scheduled Appointments Tab -->
             <div class="tab-pane fade" id="scheduled" role="tabpanel">
                 @{
-                    var scheduledAppointments = Model.Where(a => a.Status.ToString() == "Scheduled").ToList();
+                    var scheduledAppointments = Model.Where(a => a.Status.ToString() == "Pending").ToList();
                 }
 
                 @if (scheduledAppointments.Any())
@@ -295,7 +295,7 @@
             <!-- Completed Appointments Tab -->
             <div class="tab-pane fade" id="completed" role="tabpanel">
                 @{
-                    var completedAppointments = Model.Where(a => a.Status.ToString() == "Completed").ToList();
+                    var completedAppointments = Model.Where(a => a.Status.ToString() == "Confirmed").ToList();
                 }
 
                 @if (completedAppointments.Any())

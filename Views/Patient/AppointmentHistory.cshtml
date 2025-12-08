@@ -16,7 +16,7 @@
                     <p class="text-muted mb-0">@patient?.FirstName @patient?.LastName</p>
                 </div>
                 <div class="text-end">
-                    <a href="@Url.Action("Profile", new { id = patient?.PatientId })" class="btn btn-outline-secondary">
+                    <a href="/Patient/Profile/@patient?.PatientId" class="btn btn-outline-secondary">
                         <i class="fas fa-arrow-left me-1"></i>Back to Profile
                     </a>
                 </div>

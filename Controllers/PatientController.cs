@@ -118,7 +118,7 @@ namespace WebApplication1.Controllers
         {
             try
             {
-                // Get patient with appointments, payments, and related data
+                
                 var patient = db.Patients
                     .Include(p => p.Appointments)
                         .ThenInclude(a => a.Payment)
@@ -133,25 +133,25 @@ namespace WebApplication1.Controllers
                     return RedirectToAction("Login");
                 }
 
-                // Check if patient has appointments and create pending payments for appointments without payments
+                
                 if (patient.Appointments.Any())
                 {
-                    // Get appointments that don't have payments yet (excluding cancelled appointments)
+                   
                     var appointmentsWithoutPayments = patient.Appointments
                         .Where(a => a.Payment == null && a.Status != AppointmentStatus.Cancelled)
                         .ToList();
 
-                    // Create pending payment records for appointments without payments
+                    
                     foreach (var appointment in appointmentsWithoutPayments)
                     {
                         var payment = new Payment
                         {
                             Amount = appointment.Fee,
-                            Currency = "EGP", // Egyptian Pound
-                            PaymentStatus = PaymentStatus.Pending, // Status = 1
+                            Currency = "EGP", 
+                            PaymentStatus = PaymentStatus.Pending, 
                             AppointmentId = appointment.AppointmentId,
-                            PaidAt = null, // Not paid yet
-                            TransactionId = null // Will be set when payment is processed
+                            PaidAt = null,
+                            TransactionId = null 
                         };
 
                         db.Payments.Add(payment);
@@ -162,7 +162,6 @@ namespace WebApplication1.Controllers
                     {
                         db.SaveChanges();
 
-                        // Reload patient data to include the newly created payments
                         patient = db.Patients
                             .Include(p => p.Appointments)
                                 .ThenInclude(a => a.Payment)
@@ -182,20 +181,15 @@ namespace WebApplication1.Controllers
                     .ThenByDescending(p => p.PaymentId)
                     .ToList();
 
-                // Calculate summary statistics and pass via ViewBag
+               
                 ViewBag.Patient = patient;
-                ViewBag.TotalPendingPayments = payments.Count(p => p.PaymentStatus == PaymentStatus.Pending);
-                ViewBag.TotalCompletedPayments = payments.Count(p => p.PaymentStatus == PaymentStatus.Completed);
-                ViewBag.TotalAmount = payments.Where(p => p.PaymentStatus == PaymentStatus.Completed).Sum(p => p.Amount);
-                ViewBag.PendingAmount = payments.Where(p => p.PaymentStatus == PaymentStatus.Pending).Sum(p => p.Amount);
-
                 return View(payments);
             }
             catch (Exception ex)
             {
                 // Log the exception for debugging
                 ViewBag.Error = $"An error occurred while loading payment data: {ex.Message}";
-                return RedirectToAction("Profile", new { id = id });
+                return RedirectToAction("Profile",id);
             }
         }
 
@@ -220,14 +214,12 @@ namespace WebApplication1.Controllers
                 .ToList();
 
             ViewBag.Patient = patient;
-            ViewBag.TotalAppointments = appointmentHistory.Count;
-            ViewBag.CompletedAppointments = appointmentHistory.Count(a => a.Status == AppointmentStatus.Completed);
-            ViewBag.CancelledAppointments = appointmentHistory.Count(a => a.Status == AppointmentStatus.Cancelled);
+         
 
             return View(appointmentHistory);
         }
 
-        // Update your existing AvailableAppointments method to show ALL types (or default to in-person)
+   
         [Route("Patient/AvailableAppointments/{id:int}")]
         public IActionResult AvailableAppointments(int id)
         {
@@ -237,7 +229,7 @@ namespace WebApplication1.Controllers
                 return RedirectToAction("Login");
             }
 
-            // Show ALL appointment types (both in-person and video)
+          
             var allAvailableAppointments = db.Appointments
                 .Include(a => a.Doctor)
                 .Include(a => a.Clinic)
@@ -248,7 +240,7 @@ namespace WebApplication1.Controllers
                 .ThenBy(a => a.AppointmentTime)
                 .ToList();
 
-            // Get only the nearest appointment for each doctor (regardless of type)
+          
             var nearestAppointmentsByDoctor = allAvailableAppointments
                 .GroupBy(a => a.DoctorId)
                 .Select(group => group
@@ -264,7 +256,7 @@ namespace WebApplication1.Controllers
             return View(nearestAppointmentsByDoctor);
         }
 
-        // Update both new methods to not show filter buttons
+        
         [Route("Patient/AvailableInPersonAppointments/{id:int}")]
         public IActionResult AvailableInPersonAppointments(int id)
         {
@@ -329,7 +321,7 @@ namespace WebApplication1.Controllers
             return View("AvailableAppointments", nearestVideoAppointments);
         }
 
-        // FIXED: Updated BookAppointment method with proper Zoom integration and fallback
+      
         [HttpPost]
         [Route("Patient/BookAppointment")]
         public async Task<IActionResult> BookAppointment(int appointmentId, int patientId, string? symptoms)
@@ -369,17 +361,15 @@ namespace WebApplication1.Controllers
                     appointment.Symptoms = symptoms;
                 }
 
-                // Handle different appointment types
+               
                 if (appointment.Type == AppointmentType.Video)
                 {
-                    // Default fallback URL
+                    
                     string videoCallUrl = "https://zoom.us/j/2176899212?pwd=JlUCylFK7mCfuUZc3IsgbuV5aGVACy.1";
                     string successMessage = "Video appointment successfully booked";
 
-                    // DEBUG: Log the   fallback URL
-                    Console.WriteLine($"DEBUG: Using fallback URL: {videoCallUrl}");
+        
 
-                    // Try to create Zoom meeting if service is available
                     if (_zoomService != null)
                     {
                         try
@@ -408,33 +398,32 @@ namespace WebApplication1.Controllers
                         }
                         catch (Exception zoomEx)
                         {
-                            // Log but continue with fallback URL
+                    
                             Console.WriteLine($"Zoom creation failed: {zoomEx.Message}");
-                            successMessage = $"Video appointment successfully booked with Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}! Using backup video link.";
+                            
                         }
                     }
                     else
                     {
                         Console.WriteLine("DEBUG: ZoomService is null, using fallback URL");
-                        successMessage = $"Video appointment successfully booked with Dr. {appointment.Doctor.FirstName} {appointment.Doctor.LastName}! Using backup video link.";
+                    
                     }
 
-                    // CREATE VideoCallSession record
                     var videoSession = new VideoCallSession
                     {
                         AppointmentId = appointment.AppointmentId,
                         StartTime = appointment.AppointmentDate.Add(appointment.AppointmentTime),
                         Status = VideoCallStatus.Scheduled,
                         SessionType = SessionType.Consultation,
-                        VideoCallUrl = videoCallUrl, // This will always have a value now
+                        VideoCallUrl = videoCallUrl,
                         SessionTime = appointment.AppointmentDate.Add(appointment.AppointmentTime)
                     };
 
-                    Console.WriteLine($"DEBUG: Creating VideoCallSession with URL: {videoCallUrl}");
+                
 
                     db.VideoCallSessions.Add(videoSession);
                     db.SaveChanges();
-                    Console.WriteLine($"DEBUG: VideoCallSession saved with SessionId: {videoSession.SessionId}");
+                   
 
                     appointment.SessionId = videoSession.SessionId;
 
