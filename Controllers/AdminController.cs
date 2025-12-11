@@ -58,7 +58,7 @@ namespace WebApplication1.Controllers
             return View(patients);
         }
 
-        public IActionResult PatientDetails(int id)
+        public IActionResult PatientDetails(int id) //for patient details 
         {
             var patient = _context.Patients.Find(id);
 
