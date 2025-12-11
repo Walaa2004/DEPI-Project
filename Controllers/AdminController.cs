@@ -13,7 +13,7 @@ namespace WebApplication1.Controllers
         {
             return View();
         }
-
+        
         [HttpPost]
         public IActionResult Login(string username, string password)
         {
@@ -58,7 +58,7 @@ namespace WebApplication1.Controllers
             return View(patients);
         }
 
-        public IActionResult PatientDetails(int id) //for patient details 
+        public IActionResult PatientDetails(int id)
         {
             var patient = _context.Patients.Find(id);
 
